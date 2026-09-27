@@ -113,6 +113,8 @@ export async function suggestPlaces(query: string): Promise<Place[]> {
       city: p.city_name || p.name,
       country: p.iata_country_code,
       type: p.type === "city" ? "city" : "airport",
+      lat: p.latitude ?? p.airports?.[0]?.latitude ?? undefined,
+      lon: p.longitude ?? p.airports?.[0]?.longitude ?? undefined,
     }));
 }
 

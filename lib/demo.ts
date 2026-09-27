@@ -58,7 +58,7 @@ export function demoPlaces(query: string): Place[] {
       a.name.toLowerCase().includes(q)
   )
     .slice(0, 8)
-    .map(({ iata, name, city, country, type }) => ({ iata, name, city, country, type }));
+    .map(({ iata, name, city, country, type, lat, lon }) => ({ iata, name, city, country, type, lat, lon }));
 }
 
 function rng(seed: string) {

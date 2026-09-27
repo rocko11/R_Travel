@@ -6,6 +6,8 @@ export interface Place {
   city: string;
   country?: string;
   type: "airport" | "city";
+  lat?: number;
+  lon?: number;
 }
 
 export interface SearchParams {

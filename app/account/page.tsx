@@ -2,6 +2,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { currentUser } from "@/lib/auth";
 import { bookingsForUser } from "@/lib/store";
+import { jetRequestsForUser } from "@/lib/jetRequests";
+import { JET_CLASSES } from "@/lib/jets";
 import { day, money, time } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -17,6 +19,7 @@ export default async function AccountPage() {
   const user = await currentUser();
   if (!user) redirect("/account/login?next=/account");
   const bookings = await bookingsForUser(user.id);
+  const jets = await jetRequestsForUser(user.id);
   const today = new Date().toISOString().slice(0, 10);
   const upcoming = bookings.filter((b) => b.offer.slices[0].departAt.slice(0, 10) >= today);
   const past = bookings.filter((b) => b.offer.slices[0].departAt.slice(0, 10) < today);
@@ -57,13 +60,34 @@ export default async function AccountPage() {
         <span className="muted" style={{ fontSize: 14 }}>{user.name} · {user.email}</span>
       </div>
 
-      {bookings.length === 0 && (
+      {bookings.length === 0 && jets.length === 0 && (
         <div className="card state" style={{ marginTop: 20 }}>
           <p>No trips yet. Flights you book while signed in will show up here.</p>
           <Link href="/" className="btn small" style={{ display: "inline-flex", alignItems: "center", textDecoration: "none" }}>Search flights</Link>
         </div>
       )}
       {upcoming.length > 0 && (<><h2 className="trip-h">Upcoming</h2>{list(upcoming)}</>)}
+      {jets.length > 0 && (
+        <>
+          <h2 className="trip-h">Private jet requests</h2>
+          {jets.map((r) => (
+            <div key={r.id} className="card trip">
+              <div>
+                <div className="trip-route">{r.from.label} → {r.to.label}</div>
+                <div className="muted" style={{ fontSize: 14 }}>
+                  {day(r.departDate)} {r.departTime}{r.returnDate ? ` — returns ${day(r.returnDate)}` : ""} · {r.passengers} passenger{r.passengers > 1 ? "s" : ""}
+                </div>
+                <div className="tiny">{r.category === "any" ? "Best available aircraft" : JET_CLASSES.find((c) => c.id === r.category)?.name}</div>
+              </div>
+              <div style={{ textAlign: "right" }}>
+                <span className={`chip ${r.status === "booked" ? "good" : ""}`}>
+                  {{ new: "Quote requested", quoted: "Quote sent", booked: "Booked", closed: "Closed" }[r.status]}
+                </span>
+              </div>
+            </div>
+          ))}
+        </>
+      )}
       {past.length > 0 && (<><h2 className="trip-h">Past</h2>{list(past)}</>)}
     </main>
   );

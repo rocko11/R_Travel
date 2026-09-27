@@ -6,6 +6,8 @@ import type { Place } from "@/lib/types";
 export interface PlaceValue {
   iata: string;
   label: string;
+  lat?: number;
+  lon?: number;
 }
 
 export default function AirportInput({
@@ -57,7 +59,7 @@ export default function AirportInput({
   }, []);
 
   const pick = (p: Place) => {
-    const v = { iata: p.iata, label: `${p.city} (${p.iata})` };
+    const v = { iata: p.iata, label: `${p.city} (${p.iata})`, lat: p.lat, lon: p.lon };
     onChange(v);
     setText(v.label);
     setOpen(false);

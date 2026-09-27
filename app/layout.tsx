@@ -3,6 +3,7 @@ import Link from "next/link";
 import "./globals.css";
 import { config } from "@/lib/config";
 import { currentUser } from "@/lib/auth";
+import { isAdmin } from "@/lib/jetRequests";
 
 export const dynamic = "force-dynamic";
 
@@ -34,9 +35,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             </Link>
             <nav className="nav">
               <Link href="/">Flights</Link>
+              <Link href="/jets">Private jets</Link>
               <span aria-disabled title="Coming in the next phase">Hotels</span>
               {user ? (
                 <>
+                  {isAdmin(user.email) && <Link href="/admin/jets">Jet requests</Link>}
                   <Link href="/account" className="cta">My trips</Link>
                   <form action="/api/auth/logout" method="post">
                     <button className="linkbtn" type="submit">Sign out</button>

@@ -57,7 +57,7 @@ function mapOffer(o: any): Offer {
     const segments: Segment[] = s.segments.map((g: any) => ({
       carrier: g.marketing_carrier?.iata_code ?? "",
       carrierName: g.marketing_carrier?.name ?? "",
-      flightNumber: `${g.marketing_carrier?.iata_code ?? ""}${g.marketing_carrier_flight_number ?? ""}`,
+      flightNumber: `${g.marketing_carrier?.iata_code ?? ""}${String(g.marketing_carrier_flight_number ?? "").replace(/^0+(?=\d)/, "")}`,
       origin: g.origin?.iata_code,
       destination: g.destination?.iata_code,
       departAt: g.departing_at,

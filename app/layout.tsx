@@ -5,10 +5,11 @@ import { config } from "@/lib/config";
 
 export const dynamic = "force-dynamic";
 
-const brand = process.env.NEXT_PUBLIC_BRAND_NAME || "Skyline";
+const brand = process.env.NEXT_PUBLIC_BRAND_NAME || "R Travel";
 
 export const metadata: Metadata = {
   title: `${brand} — Flights worldwide`,
+  applicationName: brand,
   description: "Search and book flights from 300+ airlines.",
 };
 
@@ -26,7 +27,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <header className="topbar">
           <div className="wrap">
             <Link href="/" className="brand">
-              <span className="brand-dot" aria-hidden /> {brand}
+              <span className="brand-mark" aria-hidden>R</span> {brand}
             </Link>
             <nav className="nav">
               <Link href="/">Flights</Link>

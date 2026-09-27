@@ -1,4 +1,4 @@
-# Flight booking — Phase 1
+# R Travel — flight booking (Phase 1)
 
 Search, price and book flights from 300+ airlines through [Duffel](https://duffel.com), with your markup added and card payments through Stripe.
 
@@ -51,7 +51,7 @@ Keep `MARKUP_PERCENT` above ~4%, or large fares lose money. `lib/pricing.ts#esti
 - [ ] Add a Stripe webhook for `checkout.session.completed` that calls `completeCheckout`, so tickets issue even if the customer closes the tab after paying
 - [ ] Confirmation emails (Resend or Postmark) with the booking reference
 - [ ] Terms, privacy policy, and airline fare-rule display per offer
-- [ ] Brand name: set `NEXT_PUBLIC_BRAND_NAME` (placeholder: "Skyline")
+- [x] Brand name: R Travel (change with `NEXT_PUBLIC_BRAND_NAME`)
 - [ ] Fraud: turn on Stripe Radar rules and 3-D Secure for flights
 
 ## Code map

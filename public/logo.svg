@@ -27,6 +27,7 @@
     <rect y="76" width="128" height="30" fill="url(#sea)"/>
     <path d="M60 83h22M86 89h28M70 95h18M10 90h16" stroke="#bff0ff" stroke-width="1.6" stroke-linecap="round" opacity=".7"/>
     <path d="M0 104 Q40 94 76 100 T128 98 V128 H0Z" fill="url(#sand)"/>
+    <g transform="translate(88,4) scale(0.25) translate(-60,-36)">
     <!-- tall palm -->
     <g fill="#12402a">
       <path d="M104 118 C103 98 100 78 93 56" stroke="#3a2518" stroke-width="4.2" fill="none" stroke-linecap="round"/>
@@ -46,6 +47,7 @@
       <path d="M113 80 C107 74 99 75 94 80 C101 78 107 79 113 80Z"/>
       <path d="M113 80 C115 72 121 69 128 70 C122 73 117 76 113 80Z"/>
       <path d="M113 80 C119 78 126 81 128 87 C122 83 118 82 113 80Z"/>
+    </g>
     </g>
     <!-- R (from R Shark) -->
     <g transform="translate(10,28) scale(1.06)"><path d="M 14 6 C 12 20, 13 38, 12 62" fill="none" stroke="#0b2a4a" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.25" transform="translate(1.5,2)"/><path d="M 14 6 C 26 1, 58 4, 68 20 C 78 36, 66 52, 14 52" fill="none" stroke="#0b2a4a" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.25" transform="translate(1.5,2)"/><path d="M 36 52 C 58 56, 80 60, 98 64" fill="none" stroke="#0b2a4a" stroke-width="7.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.25" transform="translate(1.5,2)"/><path d="M 98 64 C 103 60, 104 54, 100 50" fill="none" stroke="#0b2a4a" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.25" transform="translate(1.5,2)"/><path d="M 14 6 C 12 20, 13 38, 12 62" fill="none" stroke="#ffffff" stroke-width="12.0" stroke-linecap="round" stroke-linejoin="round" opacity="1" transform="translate(0,0)"/><path d="M 14 6 C 26 1, 58 4, 68 20 C 78 36, 66 52, 14 52" fill="none" stroke="#ffffff" stroke-width="12.0" stroke-linecap="round" stroke-linejoin="round" opacity="1" transform="translate(0,0)"/><path d="M 36 52 C 58 56, 80 60, 98 64" fill="none" stroke="#ffffff" stroke-width="11.0" stroke-linecap="round" stroke-linejoin="round" opacity="1" transform="translate(0,0)"/><path d="M 98 64 C 103 60, 104 54, 100 50" fill="none" stroke="#ffffff" stroke-width="9.0" stroke-linecap="round" stroke-linejoin="round" opacity="1" transform="translate(0,0)"/><path d="M 14 6 C 12 20, 13 38, 12 62" fill="none" stroke="#0b2a5c" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round" opacity="1" transform="translate(0,0)"/><path d="M 14 6 C 26 1, 58 4, 68 20 C 78 36, 66 52, 14 52" fill="none" stroke="#0b2a5c" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round" opacity="1" transform="translate(0,0)"/><path d="M 36 52 C 58 56, 80 60, 98 64" fill="none" stroke="#0b2a5c" stroke-width="7.5" stroke-linecap="round" stroke-linejoin="round" opacity="1" transform="translate(0,0)"/><path d="M 98 64 C 103 60, 104 54, 100 50" fill="none" stroke="#0b2a5c" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" opacity="1" transform="translate(0,0)"/></g>

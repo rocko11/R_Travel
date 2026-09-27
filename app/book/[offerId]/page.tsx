@@ -3,6 +3,7 @@
 import { use, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { SliceDetail, SliceRow } from "../../components/Itinerary";
+import WeatherStrip from "../../components/WeatherStrip";
 import { money } from "@/lib/format";
 import type { PassengerInput, PricedOffer } from "@/lib/types";
 
@@ -129,6 +130,7 @@ export default function BookPage({ params }: { params: Promise<{ offerId: string
           )}
           {me && <div className="alert good">Signed in as {me.name}. This trip will be saved under My trips.</div>}
 
+          <WeatherStrip origin={offer.slices[0].origin} destination={offer.slices[0].destination} date={offer.slices[0].departAt.slice(0, 10)} />
           <section className="card section">
             <h2>Your trip</h2>
             <p>{offer.owner.name} · {offer.checkedBags > 0 ? `${offer.checkedBags} checked bag included` : "Carry-on only"} · {offer.refundable ? "Refundable" : "Non-refundable"}{offer.changeable ? ", changes allowed" : ""}</p>

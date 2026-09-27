@@ -4,6 +4,7 @@ import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import SearchForm from "../components/SearchForm";
 import { SliceRow } from "../components/Itinerary";
+import WeatherStrip from "../components/WeatherStrip";
 import { duration, money } from "@/lib/format";
 import type { CabinClass, PricedOffer } from "@/lib/types";
 
@@ -129,6 +130,9 @@ function Results() {
         </aside>
 
         <section aria-live="polite">
+          {sp.get("origin") && sp.get("destination") && (
+            <WeatherStrip origin={sp.get("origin")!} destination={sp.get("destination")!} date={sp.get("departDate") ?? undefined} />
+          )}
           {top && (
             <div className="card sortbar" role="group" aria-label="Sort">
               <button aria-pressed={sort === "best"} onClick={() => setSort("best")}>

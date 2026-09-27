@@ -12,7 +12,7 @@ const brand = process.env.NEXT_PUBLIC_BRAND_NAME || "R Travel";
 export const metadata: Metadata = {
   title: `${brand} — Flights worldwide`,
   applicationName: brand,
-  description: "Search and book flights from 300+ airlines.",
+  description: "R Travel: search and book flights from 300+ airlines and private jets worldwide.",
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
@@ -36,6 +36,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <nav className="nav">
               <Link href="/">Flights</Link>
               <Link href="/jets">Private jets</Link>
+              <Link href="/destinations">Destinations</Link>
               <span aria-disabled title="Coming in the next phase">Hotels</span>
               {user ? (
                 <>
@@ -53,7 +54,14 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         </header>
         {children}
         <footer className="wrap footer">
-          Prices include all taxes and our service fee. Fares are set by the airline and may change until ticketed.
+          <nav className="footer-links" aria-label="R Travel">
+            <Link href="/about">About R Travel</Link>
+            <Link href="/how-it-works">How R Travel works</Link>
+            <Link href="/faq">R Travel FAQ</Link>
+            <Link href="/destinations">R Travel destination guides</Link>
+            <Link href="/jets">R Travel private jets</Link>
+          </nav>
+          © {new Date().getFullYear()} R Travel. Prices include all taxes and our service fee. Fares are set by the airline and may change until ticketed.
         </footer>
       </body>
     </html>

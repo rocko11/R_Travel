@@ -114,7 +114,7 @@ export default function BookPage({ params }: { params: Promise<{ offerId: string
             <div style={{ display: "grid", gap: 16 }}>
               {offer.slices.map((s, i) => (
                 <div key={i}>
-                  <SliceRow slice={s} iata={offer.owner.iata} logo={offer.owner.logo} showDate />
+                  <SliceRow slice={s} iata={offer.owner.iata} logo={offer.owner.logo} showDate showFlights={false} />
                   <SliceDetail slice={s} />
                 </div>
               ))}

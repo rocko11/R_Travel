@@ -31,7 +31,7 @@ export default async function BookingPage({ params }: { params: Promise<{ id: st
         <div style={{ display: "grid", gap: 16 }}>
           {b.offer.slices.map((s, i) => (
             <div key={i}>
-              <SliceRow slice={s} iata={b.offer.owner.iata} logo={b.offer.owner.logo} showDate />
+              <SliceRow slice={s} iata={b.offer.owner.iata} logo={b.offer.owner.logo} showDate showFlights={false} />
               <SliceDetail slice={s} />
             </div>
           ))}

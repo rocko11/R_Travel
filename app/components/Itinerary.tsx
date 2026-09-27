@@ -10,12 +10,13 @@ export function CarrierLogo({ iata, logo }: { iata: string; logo?: string }) {
   );
 }
 
-export function SliceRow({ slice, iata, logo, showDate }: { slice: Slice; iata: string; logo?: string; showDate?: boolean }) {
+export function SliceRow({ slice, iata, logo, showDate, showFlights = true }: { slice: Slice; iata: string; logo?: string; showDate?: boolean; showFlights?: boolean }) {
   const shift = dayShift(slice.departAt, slice.arriveAt);
   const via = slice.segments.slice(0, -1).map((s) => s.destination).join(", ");
   return (
     <div className="leg">
       <CarrierLogo iata={iata} logo={logo} />
+      <div>
       <div className="leg-line">
         <div>
           <div className="leg-time">{time(slice.departAt)}</div>
@@ -37,6 +38,13 @@ export function SliceRow({ slice, iata, logo, showDate }: { slice: Slice; iata: 
           </div>
           <div className="leg-code">{slice.destination}</div>
         </div>
+      </div>
+      {showFlights && (
+        <div className="leg-flights">
+          {slice.segments.map((s) => s.flightNumber.replace(/^([A-Z0-9]{2})(\d)/, "$1 $2")).join(" · ")}
+          {slice.segments.length === 1 && slice.segments[0].aircraft ? ` · ${slice.segments[0].aircraft}` : ""}
+        </div>
+      )}
       </div>
     </div>
   );

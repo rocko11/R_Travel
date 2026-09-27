@@ -2,9 +2,9 @@
   <defs>
     <clipPath id="c"><rect width="128" height="128" rx="28"/></clipPath>
     <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#ff5f6d"/>
-      <stop offset="0.55" stop-color="#ff9a4d"/>
-      <stop offset="1" stop-color="#ffd27a"/>
+      <stop offset="0" stop-color="#ffb400"/>
+      <stop offset="0.55" stop-color="#ffd23f"/>
+      <stop offset="1" stop-color="#ffeaa0"/>
     </linearGradient>
     <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="#1ba7c9"/>
@@ -47,8 +47,7 @@
       <path d="M113 80 C115 72 121 69 128 70 C122 73 117 76 113 80Z"/>
       <path d="M113 80 C119 78 126 81 128 87 C122 83 118 82 113 80Z"/>
     </g>
-    <!-- R -->
-    <path transform="translate(10.19,108.20) scale(0.118,-0.118)" d="M413 0 273 260H252V0H56V705H365Q450 705 509.0 675.5Q568 646 598.0 594.5Q628 543 628 479Q628 407 588.5 352.5Q549 298 473 275L632 0ZM252 394H349Q389 394 409.0 413.0Q429 432 429 468Q429 502 408.5 521.5Q388 541 349 541H252Z" fill="#0b2a4a" opacity=".35"/>
-    <path transform="translate(8.39,106) scale(0.118,-0.118)" d="M413 0 273 260H252V0H56V705H365Q450 705 509.0 675.5Q568 646 598.0 594.5Q628 543 628 479Q628 407 588.5 352.5Q549 298 473 275L632 0ZM252 394H349Q389 394 409.0 413.0Q429 432 429 468Q429 502 408.5 521.5Q388 541 349 541H252Z" fill="#ffffff" stroke="#0b2a4a" stroke-width="18.6" paint-order="stroke"/>
+    <!-- R (from R Shark) -->
+    <g transform="translate(10,16) scale(1.06)"><path d="M 14 6 C 12 20, 13 38, 12 62" fill="none" stroke="#0b2a4a" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.25" transform="translate(1.5,2)"/><path d="M 14 6 C 26 1, 58 4, 68 20 C 78 36, 66 52, 14 52" fill="none" stroke="#0b2a4a" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.25" transform="translate(1.5,2)"/><path d="M 36 52 C 58 56, 80 60, 98 64" fill="none" stroke="#0b2a4a" stroke-width="7.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.25" transform="translate(1.5,2)"/><path d="M 98 64 C 103 60, 104 54, 100 50" fill="none" stroke="#0b2a4a" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.25" transform="translate(1.5,2)"/><path d="M 14 6 C 12 20, 13 38, 12 62" fill="none" stroke="#0b2a4a" stroke-width="12.0" stroke-linecap="round" stroke-linejoin="round" opacity="1" transform="translate(0,0)"/><path d="M 14 6 C 26 1, 58 4, 68 20 C 78 36, 66 52, 14 52" fill="none" stroke="#0b2a4a" stroke-width="12.0" stroke-linecap="round" stroke-linejoin="round" opacity="1" transform="translate(0,0)"/><path d="M 36 52 C 58 56, 80 60, 98 64" fill="none" stroke="#0b2a4a" stroke-width="11.0" stroke-linecap="round" stroke-linejoin="round" opacity="1" transform="translate(0,0)"/><path d="M 98 64 C 103 60, 104 54, 100 50" fill="none" stroke="#0b2a4a" stroke-width="9.0" stroke-linecap="round" stroke-linejoin="round" opacity="1" transform="translate(0,0)"/><path d="M 14 6 C 12 20, 13 38, 12 62" fill="none" stroke="#ffffff" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round" opacity="1" transform="translate(0,0)"/><path d="M 14 6 C 26 1, 58 4, 68 20 C 78 36, 66 52, 14 52" fill="none" stroke="#ffffff" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round" opacity="1" transform="translate(0,0)"/><path d="M 36 52 C 58 56, 80 60, 98 64" fill="none" stroke="#ffffff" stroke-width="7.5" stroke-linecap="round" stroke-linejoin="round" opacity="1" transform="translate(0,0)"/><path d="M 98 64 C 103 60, 104 54, 100 50" fill="none" stroke="#ffffff" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" opacity="1" transform="translate(0,0)"/></g>
   </g>
 </svg>

@@ -27,7 +27,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <header className="topbar">
           <div className="wrap">
             <Link href="/" className="brand">
-              <span className="brand-mark" aria-hidden>R</span> {brand}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/logo.svg" alt="" width={52} height={52} className="brand-logo" /> {brand}
             </Link>
             <nav className="nav">
               <Link href="/">Flights</Link>

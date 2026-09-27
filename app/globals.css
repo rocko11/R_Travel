@@ -49,8 +49,9 @@ button, input, select { font: inherit; color: inherit; }
 .wrap { max-width: 1080px; margin: 0 auto; padding: 0 16px; }
 
 .topbar { border-bottom: 1px solid var(--line); background: var(--surface); }
-.topbar .wrap { display: flex; align-items: center; justify-content: space-between; height: 60px; }
-.brand { font-weight: 700; font-size: 20px; letter-spacing: -0.02em; text-decoration: none; display: flex; gap: 8px; align-items: center; }
+.topbar .wrap { display: flex; align-items: center; justify-content: space-between; height: 76px; }
+.brand { font-weight: 800; font-size: 24px; letter-spacing: -0.02em; text-decoration: none; display: flex; gap: 12px; align-items: center; }
+.brand-logo { width: 52px; height: 52px; border-radius: 12px; display: block; }
 .brand-mark { width: 26px; height: 26px; border-radius: 8px; background: var(--brand); color: var(--brand-ink); display: inline-grid; place-items: center; font-size: 15px; font-weight: 800; letter-spacing: -0.02em; }
 .nav { display: flex; gap: 18px; color: var(--ink-2); font-size: 14px; }
 .nav span[aria-disabled] { opacity: 0.5; }

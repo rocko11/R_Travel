@@ -100,4 +100,5 @@ export interface Booking {
   bookingReference?: string;
   failureReason?: string;
   mode: "demo" | "test" | "live";
+  userId?: string;
 }

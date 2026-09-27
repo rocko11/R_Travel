@@ -48,6 +48,9 @@ export default async function BookingPage({ params }: { params: Promise<{ id: st
           <div className="line total"><span>{b.status === "failed" ? "Total (not charged or refunded)" : "Total paid"}</span><span>{money(b.total, b.currency)}</span></div>
         </div>
         <p className="tiny">Booking ID {b.id}</p>
+        {b.userId && (
+          <Link href="/account" className="btn small" style={{ display: "inline-flex", alignItems: "center", textDecoration: "none", marginRight: 8 }}>My trips</Link>
+        )}
         <Link href="/" className="btn ghost small" style={{ display: "inline-flex", alignItems: "center", textDecoration: "none" }}>Search another flight</Link>
       </div>
     </main>

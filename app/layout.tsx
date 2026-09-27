@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import "./globals.css";
 import { config } from "@/lib/config";
+import { currentUser } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -13,7 +14,8 @@ export const metadata: Metadata = {
   description: "Search and book flights from 300+ airlines.",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const user = await currentUser();
   return (
     <html lang="en">
       <body>
@@ -33,6 +35,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <nav className="nav">
               <Link href="/">Flights</Link>
               <span aria-disabled title="Coming in the next phase">Hotels</span>
+              {user ? (
+                <>
+                  <Link href="/account" className="cta">My trips</Link>
+                  <form action="/api/auth/logout" method="post">
+                    <button className="linkbtn" type="submit">Sign out</button>
+                  </form>
+                </>
+              ) : (
+                <Link href="/account/login" className="cta">Sign in</Link>
+              )}
             </nav>
           </div>
         </header>

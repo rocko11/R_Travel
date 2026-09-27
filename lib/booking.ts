@@ -23,6 +23,7 @@ export async function startBooking(args: {
   passengers: PassengerInput[];
   contact: ContactInput;
   quotedTotal: number;
+  userId?: string;
 }): Promise<{ bookingId: string; redirectUrl: string }> {
   assertSafeConfig();
   const offer = await freshOffer(args.offerId);
@@ -48,6 +49,7 @@ export async function startBooking(args: {
     total: offer.total,
     currency: offer.currency,
     mode: config.mode,
+    userId: args.userId,
   };
 
   if (!paymentsRequired()) {

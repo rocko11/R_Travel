@@ -24,6 +24,7 @@ export default function BookPage({ params }: { params: Promise<{ offerId: string
   const [agree, setAgree] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [me, setMe] = useState<{ email: string; name: string } | null | undefined>(undefined);
   const [notice, setNotice] = useState(sp.get("cancelled") ? "Payment was cancelled. Your details are still here." : "");
 
   const load = async () => {
@@ -32,6 +33,16 @@ export default function BookPage({ params }: { params: Promise<{ offerId: string
     if (!r.ok) throw new Error(j.error || "Could not load this fare.");
     return j.offer as PricedOffer;
   };
+
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then((r) => r.json())
+      .then((j) => {
+        setMe(j.user);
+        if (j.user) setEmail((cur) => cur || j.user.email);
+      })
+      .catch(() => setMe(null));
+  }, []);
 
   useEffect(() => {
     load()
@@ -107,6 +118,16 @@ export default function BookPage({ params }: { params: Promise<{ offerId: string
       <form className="book" onSubmit={submit}>
         <div>
           {notice && <div className="alert warn">{notice}</div>}
+          {me === null && (
+            <div className="alert" style={{ background: "var(--brand-soft)", color: "var(--ink)" }}>
+              <b>Want to see this trip later?</b>{" "}
+              <a href={`/account/login?next=${encodeURIComponent(`/book/${encodeURIComponent(id)}${typeof window !== "undefined" ? window.location.search : ""}`)}`} style={{ color: "var(--brand)" }}>Sign in</a>
+              {" or "}
+              <a href={`/account/signup?next=${encodeURIComponent(`/book/${encodeURIComponent(id)}${typeof window !== "undefined" ? window.location.search : ""}`)}`} style={{ color: "var(--brand)" }}>create an account</a>
+              {" "}before booking and it will be saved under My trips. You can also continue as a guest.
+            </div>
+          )}
+          {me && <div className="alert good">Signed in as {me.name}. This trip will be saved under My trips.</div>}
 
           <section className="card section">
             <h2>Your trip</h2>

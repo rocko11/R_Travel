@@ -10,7 +10,13 @@ export async function GET(req: NextRequest) {
   try {
     return NextResponse.json(
       { weather: await weatherFor(iata, date) },
-      { headers: { "Cache-Control": "public, s-maxage=1800, stale-while-revalidate=3600" } }
+      {
+        headers: {
+          "Cache-Control": "public, s-maxage=1800, stale-while-revalidate=3600",
+          // Netlify's CDN ignores query strings unless told otherwise.
+          "Netlify-Vary": "query=iata|date",
+        },
+      }
     );
   } catch {
     return NextResponse.json({ weather: null });

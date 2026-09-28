@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
 
   if (aiPlannerEnabled()) {
     try {
-      return NextResponse.json({ plan: await generatePlan(r, style), source: "ai" });
+      return NextResponse.json({ plan: fitToFlights(await generatePlan(r, style), r.arriveTime, r.leaveTime, false), source: "ai" });
     } catch (e) {
       console.error("planner", e);
       // fall through to the guide-based plan if we have one
@@ -46,18 +46,18 @@ export async function POST(req: NextRequest) {
 }
 
 /** Drop slots that fall before landing on day 1 or after take-off on the last day. */
-function fitToFlights(plan: TripPlan, arrive?: string, leave?: string): TripPlan {
+function fitToFlights(plan: TripPlan, arrive?: string, leave?: string, addTransfers = true): TripPlan {
   const hour = (t?: string) => (t ? Number(t.slice(0, 2)) : undefined);
   const a = hour(arrive), l = hour(leave);
   const days = plan.days.map((d, i) => {
     let slots = d.slots;
     if (i === 0 && a != null) {
-      slots = slots.filter((s) => (s.time === "Morning" ? a < 10 : s.time === "Afternoon" ? a < 15 : a < 21));
-      slots = [{ time: a < 12 ? "Morning" : a < 17 ? "Afternoon" : "Evening", title: "Arrive and check in", text: `Land around ${arrive}. Transfer to your hotel and settle in.`, book: "concierge" as const }, ...slots];
+      slots = slots.filter((s) => /arriv|airport|check in|transfer/i.test(s.title) || (s.time === "Morning" ? a < 10 : s.time === "Afternoon" ? a < 15 : a < 21));
+      if (addTransfers) slots = [{ time: a < 12 ? "Morning" : a < 17 ? "Afternoon" : "Evening", title: "Arrive and check in", text: `Land around ${arrive}. Transfer to your hotel and settle in.`, book: "concierge" as const }, ...slots];
     }
     if (i === plan.days.length - 1 && l != null && plan.days.length > 1) {
-      slots = slots.filter((s) => (s.time === "Morning" ? l >= 12 : s.time === "Afternoon" ? l >= 17 : l >= 22));
-      slots = [...slots, { time: l < 12 ? "Morning" : l < 17 ? "Afternoon" : "Evening", title: "Head to the airport", text: `Flight at ${leave}. Leave about 3 hours before for international flights.`, book: "concierge" as const }];
+      slots = slots.filter((s) => /airport|departure|flight/i.test(s.title) || (s.time === "Morning" ? l >= 12 : s.time === "Afternoon" ? l >= 17 : l >= 22));
+      if (addTransfers) slots = [...slots, { time: l < 12 ? "Morning" : l < 17 ? "Afternoon" : "Evening", title: "Head to the airport", text: `Flight at ${leave}. Leave about 3 hours before for international flights.`, book: "concierge" as const }];
     }
     return { ...d, slots };
   });

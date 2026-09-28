@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { currentUser } from "@/lib/auth";
 import { allJetRequests, isAdmin } from "@/lib/jetRequests";
 import { allCruiseRequests } from "@/lib/cruiseRequests";
+import { allHotelRequests } from "@/lib/hotelRequests";
 import { allConcierge } from "@/lib/concierge";
 import { allTourInterest } from "@/lib/tourInterest";
 
@@ -12,9 +13,16 @@ export const metadata = { title: "R Travel admin" };
 export default async function AdminHome() {
   const user = await currentUser();
   if (!isAdmin(user?.email)) notFound();
-  const [jets, cruises, cc, tours] = await Promise.all([allJetRequests(), allCruiseRequests(), allConcierge(), allTourInterest()]);
+  const [jets, cruises, hotels, cc, tours] = await Promise.all([
+    allJetRequests(),
+    allCruiseRequests(),
+    allHotelRequests(),
+    allConcierge(),
+    allTourInterest(),
+  ]);
   const cards = [
     { href: "/admin/concierge", title: "Concierge requests", n: cc.filter((r) => r.status === "new").length, sub: `${cc.length} total` },
+    { href: "/admin/hotels", title: "Hotel requests", n: hotels.filter((r) => r.status === "new").length, sub: `${hotels.length} total` },
     { href: "/admin/jets", title: "Private jet requests", n: jets.filter((r) => r.status === "new").length, sub: `${jets.length} total` },
     { href: "/admin/cruises", title: "Luxury cruise requests", n: cruises.filter((r) => r.status === "new").length, sub: `${cruises.length} total` },
     { href: "/admin/tours", title: "Tour demand", n: tours.length, sub: "signups" },

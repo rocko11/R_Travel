@@ -60,9 +60,9 @@ gtag('config', 'G-QFJ5D8J4BS');`}
               <Link href="/jets">Private jets</Link>
               <Link href="/cruises">Luxury cruises</Link>
               <Link href="/destinations">Destinations</Link>
+              <Link href="/hotels">Hotels</Link>
               <Link href="/planner">Trip planner</Link>
               <Link href="/concierge">Concierge</Link>
-              <span aria-disabled title="Coming in the next phase">Hotels</span>
               {user ? (
                 <>
                   {isAdmin(user.email) && <Link href="/admin">Admin</Link>}
@@ -84,6 +84,7 @@ gtag('config', 'G-QFJ5D8J4BS');`}
             <Link href="/how-it-works">How R Travel works</Link>
             <Link href="/faq">R Travel FAQ</Link>
             <Link href="/destinations">R Travel destination guides</Link>
+            <Link href="/hotels">R Travel hotels</Link>
             <Link href="/jets">R Travel private jets</Link>
             <Link href="/cruises">R Travel luxury cruises</Link>
             <Link href="/concierge">R Travel concierge</Link>

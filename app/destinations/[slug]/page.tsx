@@ -87,7 +87,9 @@ export default async function DestinationPage({ params }: { params: Promise<{ sl
               </div>
             ))}
           </div>
-          <p className="tiny">Hotel booking on R Travel is coming soon. Ask the concierge to reserve any of these now.</p>
+          <Link href={`/hotels?city=${d.slug}`} className="btn small" style={{ display: "inline-flex", alignItems: "center", textDecoration: "none", marginTop: 4 }}>
+            Get hotel rates for {d.name}
+          </Link>
         </Section>
       )}
 

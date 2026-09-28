@@ -37,10 +37,29 @@ export async function POST(req: NextRequest) {
   const guide = destinationForIata(String(b.iata ?? ""));
   if (guide) {
     const plan = buildPlans(guide, Math.min(r.days, 7), Number(r.start.slice(5, 7))).find((p) => p.id === style)!;
-    return NextResponse.json({ plan, source: "guide" });
+    return NextResponse.json({ plan: fitToFlights(plan, r.arriveTime, r.leaveTime), source: "guide" });
   }
   return NextResponse.json(
     { error: aiPlannerEnabled() ? "The planner is busy. Try again in a moment." : "Custom planning for this destination isn't switched on yet." },
     { status: 503 }
   );
+}
+
+/** Drop slots that fall before landing on day 1 or after take-off on the last day. */
+function fitToFlights(plan: TripPlan, arrive?: string, leave?: string): TripPlan {
+  const hour = (t?: string) => (t ? Number(t.slice(0, 2)) : undefined);
+  const a = hour(arrive), l = hour(leave);
+  const days = plan.days.map((d, i) => {
+    let slots = d.slots;
+    if (i === 0 && a != null) {
+      slots = slots.filter((s) => (s.time === "Morning" ? a < 10 : s.time === "Afternoon" ? a < 15 : a < 21));
+      slots = [{ time: a < 12 ? "Morning" : a < 17 ? "Afternoon" : "Evening", title: "Arrive and check in", text: `Land around ${arrive}. Transfer to your hotel and settle in.`, book: "concierge" as const }, ...slots];
+    }
+    if (i === plan.days.length - 1 && l != null && plan.days.length > 1) {
+      slots = slots.filter((s) => (s.time === "Morning" ? l >= 12 : s.time === "Afternoon" ? l >= 17 : l >= 22));
+      slots = [...slots, { time: l < 12 ? "Morning" : l < 17 ? "Afternoon" : "Evening", title: "Head to the airport", text: `Flight at ${leave}. Leave about 3 hours before for international flights.`, book: "concierge" as const }];
+    }
+    return { ...d, slots };
+  });
+  return { ...plan, days };
 }

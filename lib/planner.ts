@@ -32,12 +32,9 @@ export function buildPlans(d: Destination, days: number, month?: number): TripPl
   const trips = d.todo.filter(isDayTrip);
   const food = d.food ?? [];
   const tours = d.tours ?? [];
-  const seasonal = month
-    ? (d.events ?? []).filter((e) => {
-        const m = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"][month - 1];
-        return e.when.toLowerCase().includes(m) || /year-round/i.test(e.when);
-      })
-    : [];
+  // Only year-round events: a month match alone can't tell if an event falls on the traveler's dates.
+  void month;
+  const seasonal = (d.events ?? []).filter((e) => /year-round/i.test(e.when));
   const pick = <T,>(arr: T[], i: number): T | undefined => (arr.length ? arr[i % arr.length] : undefined);
   const nightlife = d.nightlife && !/not applicable/i.test(d.nightlife) ? d.nightlife : undefined;
 
@@ -52,7 +49,7 @@ export function buildPlans(d: Destination, days: number, month?: number): TripPl
     const ev = pick(seasonal, i);
     slots.push(
       ev && i === 0
-        ? { time: "Evening", title: ev.name, text: `${ev.text} Happening while you're there (${ev.when}).`, book: "concierge" }
+        ? { time: "Evening", title: ev.name, text: ev.text, book: "concierge" }
         : { time: "Evening", title: i % 2 ? "Night out" : `Dinner: ${pick(food, i) ?? "local specialties"}`, text: i % 2 && nightlife ? nightlife : `Try ${pick(food, i) ?? "the local specialties"}. The concierge can book a table.`, book: "concierge" }
     );
     return { day: i + 1, theme: i === 0 ? "Icons of the city" : `Day ${i + 1} highlights`, slots };

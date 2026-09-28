@@ -9,8 +9,23 @@ import type { CabinInfo, PricedOffer, Segment } from "@/lib/types";
 const WIFI: Record<string, string> = { free: "Free Wi-Fi", paid: "Wi-Fi (paid)", yes: "Wi-Fi", no: "No Wi-Fi" };
 const CLASSES = ["economy", "premium_economy", "business", "first"] as const;
 
+const SEAT: Record<string, string> = {
+  standard: "Standard seat",
+  recliner: "Recliner",
+  angle_flat: "Angled lie-flat seat",
+  full_flat: "Lie-flat bed",
+  full_flat_pod: "Lie-flat pod with aisle access",
+  suite: "Private suite",
+};
+function seatLabel(t?: string) {
+  if (!t) return undefined;
+  if (SEAT[t]) return SEAT[t];
+  const s = t.replace(/_/g, " ");
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
 function legroomLabel(l?: string) {
-  if (!l) return undefined;
+  if (!l || l === "n/a") return undefined;
   if (l === "more") return "More legroom";
   if (l === "less") return "Less legroom";
   if (l === "standard") return "Standard legroom";
@@ -20,7 +35,7 @@ function legroomLabel(l?: string) {
 function cabinFacts(c?: CabinInfo) {
   if (!c) return [];
   return [
-    c.seatType,
+    seatLabel(c.seatType),
     c.pitch ? `${c.pitch}" seat pitch` : undefined,
     legroomLabel(c.legroom),
     c.wifi ? WIFI[c.wifi] : undefined,
@@ -96,7 +111,7 @@ export default function CabinPanel({ offer, allowCompare = true, startOpen = fal
   const rows: [string, (o: PricedOffer) => string][] = [
     ["Total price", (o) => money(o.total, o.currency)],
     ["Cabin", (o) => firstCabin(o)?.marketingName ?? CABIN_LABEL[o.cabinClass ?? "economy"]],
-    ["Seat", (o) => firstCabin(o)?.seatType ?? "—"],
+    ["Seat", (o) => seatLabel(firstCabin(o)?.seatType) ?? "—"],
     ["Seat pitch", (o) => (firstCabin(o)?.pitch ? `${firstCabin(o)!.pitch}"` : "—")],
     ["Legroom", (o) => legroomLabel(firstCabin(o)?.legroom) ?? "—"],
     ["Wi-Fi", (o) => (firstCabin(o)?.wifi ? WIFI[firstCabin(o)!.wifi!] : "—")],

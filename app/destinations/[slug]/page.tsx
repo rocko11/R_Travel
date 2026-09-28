@@ -146,9 +146,15 @@ export default async function DestinationPage({ params }: { params: Promise<{ sl
           <div className="card section"><h3>When to go</h3><p>{d.bestTime}</p></div>
           {d.currency && <div className="card section"><h3>Money</h3><p>{d.currency}</p></div>}
           {d.language && <div className="card section"><h3>Language</h3><p>{d.language}</p></div>}
+          {d.visaUS && <div className="card section"><h3>Visa (US passport holders)</h3><p>{d.visaUS}</p></div>}
           <div className="card section"><h3>R Travel tip</h3><p>{d.tip}</p></div>
           {!d.hotels && <div className="card section"><h3>Where to stay</h3><p>{d.neighborhoods}</p></div>}
         </div>
+        {d.visaUS && (
+          <p className="tiny" style={{ marginTop: 10 }}>
+            Entry rules shown are for US passport holders and change often — always confirm with the destination&apos;s embassy or your airline before booking. Other nationalities should check separately.
+          </p>
+        )}
         {d.goodToKnow && (
           <>
             <h3 className="guide-h3">Good to know</h3>

@@ -33,6 +33,8 @@ export interface Destination {
   events?: { name: string; when: string; text: string }[];
   nightlife?: string;
   sports?: string;
+  /** Entry requirement for a US passport holder, as of Sept 2026. Rules change — always verify with the embassy or airline before booking. */
+  visaUS?: string;
 }
 
 /** Tours R Travel plans to offer; shown as "coming soon" with a notify-me signup. */
@@ -271,10 +273,46 @@ const BASE: Destination[] = [
   },
 ];
 
+/**
+ * Visa/entry requirement for a US passport holder, by destination slug, as of Sept 2026.
+ * Domestic US cities need none. Everything else: always double-check with the embassy or
+ * airline before booking — rules like the UK ETA and EU ETIAS have been changing this year.
+ */
+const VISA_US: Record<string, string> = {
+  "tel-aviv": "No visa needed. Visa-free entry for up to 90 days.",
+  london: "Electronic Travel Authorisation (ETA) required before you fly — apply online, about £20 (~$27), approval usually within minutes to a few days. Valid 2 years / unlimited trips; each stay up to 6 months.",
+  paris: "No visa needed for stays up to 90 days in any 180-day period (Schengen area). Since April 2026, first entries are registered biometrically (EES) at the border — no advance application. The EU's ETIAS pre-registration has been delayed to 2027 and isn't required yet.",
+  rome: "No visa needed for stays up to 90 days in any 180-day period (Schengen area). Since April 2026, first entries are registered biometrically (EES) at the border — no advance application. ETIAS pre-registration is delayed to 2027, not required yet.",
+  barcelona: "No visa needed for stays up to 90 days in any 180-day period (Schengen area). Since April 2026, first entries are registered biometrically (EES) at the border — no advance application. ETIAS pre-registration is delayed to 2027, not required yet.",
+  miami: "No visa needed — domestic travel for US citizens.",
+  cancun: "No visa needed. A tourist card (FMM) is required — usually included in your airfare or issued on arrival — for stays up to 180 days.",
+  tokyo: "No visa needed. Visa-free entry for up to 90 days.",
+  dubai: "No visa needed. Free visa on arrival for up to 30 days for US passport holders, extendable.",
+  bangkok: "No visa needed for short visits. Visa-exempt stays were cut from 60 to 30 days as of September 15, 2026.",
+  athens: "No visa needed for stays up to 90 days in any 180-day period (Schengen area). Since April 2026, first entries are registered biometrically (EES) at the border — no advance application. ETIAS pre-registration is delayed to 2027, not required yet.",
+  "new-york": "No visa needed — domestic travel for US citizens.",
+  lisbon: "No visa needed for stays up to 90 days in any 180-day period (Schengen area). Since April 2026, first entries are registered biometrically (EES) at the border — no advance application. ETIAS pre-registration is delayed to 2027, not required yet.",
+  amsterdam: "No visa needed for stays up to 90 days in any 180-day period (Schengen area). Since April 2026, first entries are registered biometrically (EES) at the border — no advance application. ETIAS pre-registration is delayed to 2027, not required yet.",
+  "hong-kong": "No visa needed. Visa-free entry for up to 90 days (Hong Kong SAR has its own entry rules, separate from mainland China).",
+  macau: "No visa needed. Visa-free entry for up to 90 days (Macau SAR has its own entry rules, separate from mainland China).",
+  istanbul: "e-Visa required — apply online before you fly (roughly $50), multiple entry, valid for stays up to 90 days in any 180-day period.",
+  mecca: "A Saudi tourist e-visa is available online, but it does not grant access to Mecca or Madinah themselves — the holy sites and their city centers are restricted to Muslims only. Visiting for Hajj or Umrah requires a separate religious visa with proof of faith, arranged through an authorized agent.",
+  antalya: "e-Visa required — apply online before you fly (roughly $50), multiple entry, valid for stays up to 90 days in any 180-day period.",
+  "kuala-lumpur": "No visa needed. Visa-free entry for up to 90 days.",
+  madrid: "No visa needed for stays up to 90 days in any 180-day period (Schengen area). Since April 2026, first entries are registered biometrically (EES) at the border — no advance application. ETIAS pre-registration is delayed to 2027, not required yet.",
+  milan: "No visa needed for stays up to 90 days in any 180-day period (Schengen area). Since April 2026, first entries are registered biometrically (EES) at the border — no advance application. ETIAS pre-registration is delayed to 2027, not required yet.",
+  singapore: "No visa needed. Visa-free entry for up to 90 days.",
+  seoul: "No visa needed for stays up to 90 days. South Korea's K-ETA is temporarily waived for US citizens through the end of 2026 — check before booking in case it's reinstated.",
+  osaka: "No visa needed. Visa-free entry for up to 90 days.",
+  taipei: "No visa needed. Visa-free entry for up to 90 days.",
+  kyoto: "No visa needed. Visa-free entry for up to 90 days.",
+};
+
 /** Short guides, upgraded to full guides where extra data exists, plus the new top-20 guides. */
 export const DESTINATIONS: Destination[] = [...BASE.map((d) => ({ ...d, ...EXTRAS[d.slug] })), ...NEW_GUIDES].map((d) => ({
   ...d,
   ...MORE[d.slug],
+  visaUS: VISA_US[d.slug],
 }));
 
 /** The 20 most-visited / top-ranked cities (Euromonitor 2025). */

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Script from "next/script";
 import "./globals.css";
 import { config } from "@/lib/config";
 import { currentUser } from "@/lib/auth";
@@ -26,6 +27,14 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
       </head>
       <body>
+        {/* Google Analytics (GA4) */}
+        <Script src="https://www.googletagmanager.com/gtag/js?id=G-QFJ5D8J4BS" strategy="afterInteractive" />
+        <Script id="ga4" strategy="afterInteractive">
+          {`window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-QFJ5D8J4BS');`}
+        </Script>
         {config.mode !== "live" && (
           <div className="banner">
             {config.mode === "demo"

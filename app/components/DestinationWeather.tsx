@@ -13,7 +13,8 @@ export default function DestinationWeather({ iata }: { iata: string }) {
   if (!w) return null;
   return (
     <span className="dest-wx">
-      <span aria-hidden>{w.icon}</span> {w.temp}°F · {w.label} right now
+      <span aria-hidden>{w.icon}</span> {w.temp}°F · {w.label} right now{" "}
+      <a className="wx-credit" href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">(Weather data by Open-Meteo.com)</a>
     </span>
   );
 }

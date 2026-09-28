@@ -58,6 +58,7 @@ export default function WeatherStrip({ origin, destination, date }: { origin: st
       <Cell w={a} role="Departure" />
       <span className="wx-arrow" aria-hidden>→</span>
       <Cell w={b} role="Destination" />
+      <a className="wx-credit" href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Weather data by Open-Meteo.com</a>
       {guide && (
         <Link href={`/destinations/${guide.slug}`} className="wx-guide">
           Things to do in {guide.name} →

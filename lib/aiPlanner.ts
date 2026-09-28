@@ -69,7 +69,23 @@ function extractJson(text: string) {
 const TIMES = ["Morning", "Afternoon", "Evening"];
 const str = (v: unknown, max: number) => String(v ?? "").trim().slice(0, max);
 
+/** Long trips are written as two halves in parallel to stay within the server time limit. */
 export async function generatePlan(r: PlanRequest, style: TripPlan["id"]): Promise<TripPlan> {
+  if (r.days <= 6) return generatePart(r, style);
+  const first = Math.ceil(r.days / 2);
+  const [a, b] = await Promise.all([
+    generatePart({ ...r, days: first, leaveTime: undefined }, style, `Days 1–${first} of a ${r.days}-day trip. Cover the destination's best-known highlights.`),
+    generatePart(
+      { ...r, days: r.days - first, arriveTime: undefined },
+      style,
+      `Days ${first + 1}–${r.days} of a ${r.days}-day trip (the traveler is already there). Assume the famous highlights were covered earlier: focus on other neighborhoods, day trips and repeat favorites.`
+    ),
+  ]);
+  const days = [...a.days, ...b.days].map((d, i) => ({ ...d, day: i + 1 }));
+  return { ...a, days };
+}
+
+async function generatePart(r: PlanRequest, style: TripPlan["id"], part?: string): Promise<TripPlan> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 24_000);
   try {
@@ -85,7 +101,7 @@ export async function generatePlan(r: PlanRequest, style: TripPlan["id"]): Promi
         model: process.env.ANTHROPIC_MODEL || "claude-haiku-4-5-20251001",
         max_tokens: 400 + r.days * 450,
         system: SYSTEM,
-        messages: [{ role: "user", content: userPrompt(r, style) }],
+        messages: [{ role: "user", content: userPrompt(r, style) + (part ? `\n${part}` : "") }],
       }),
     });
     const j = await res.json();

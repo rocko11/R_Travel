@@ -12,6 +12,7 @@ export const config = {
     | "test"
     | "live",
   stripeKey: process.env.STRIPE_SECRET_KEY?.trim() || "",
+  stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET?.trim() || "",
   baseUrl: (process.env.BASE_URL || "http://localhost:3000").replace(/\/$/, ""),
   markupFixed: num(process.env.MARKUP_FIXED, 12),
   markupPercent: num(process.env.MARKUP_PERCENT, 5),

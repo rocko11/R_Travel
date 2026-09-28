@@ -5,7 +5,7 @@ import { freshOffer, issue } from "./provider";
 import { getBooking, newBookingId, saveBooking, updateBooking } from "./store";
 import type { Booking, ContactInput, PassengerInput } from "./types";
 
-const stripe = () => new Stripe(config.stripeKey);
+const stripe = () => new Stripe(config.stripeKey, { apiVersion: "2025-08-27.basil" });
 
 export class BookingError extends Error {
   constructor(message: string, public status = 400) {
@@ -59,28 +59,31 @@ export async function startBooking(args: {
   }
 
   const route = offer.slices.map((s) => `${s.origin}→${s.destination}`).join(", ");
-  const session = await stripe().checkout.sessions.create({
-    mode: "payment",
-    customer_email: args.contact.email,
-    line_items: [
-      {
-        quantity: 1,
-        price_data: {
-          currency: offer.currency.toLowerCase(),
-          unit_amount: Math.round(offer.total * 100),
-          product_data: {
-            name: `Flight ${route}`,
-            description: `${offer.owner.name} · ${args.passengers.length} traveler(s)`,
+  const session = await stripe().checkout.sessions.create(
+    {
+      mode: "payment",
+      customer_email: args.contact.email,
+      line_items: [
+        {
+          quantity: 1,
+          price_data: {
+            currency: offer.currency.toLowerCase(),
+            unit_amount: Math.round(offer.total * 100),
+            product_data: {
+              name: `Flight ${route}`,
+              description: `${offer.owner.name} · ${args.passengers.length} traveler(s)`,
+            },
           },
         },
-      },
-    ],
-    payment_intent_data: { metadata: { bookingId: booking.id } },
-    metadata: { bookingId: booking.id },
-    success_url: `${config.baseUrl}/api/checkout/complete?booking=${booking.id}&session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${config.baseUrl}/book/${encodeURIComponent(offer.id)}?cancelled=1`,
-    expires_at: Math.floor(Date.now() / 1000) + 30 * 60,
-  });
+      ],
+      payment_intent_data: { metadata: { bookingId: booking.id } },
+      metadata: { bookingId: booking.id },
+      success_url: `${config.baseUrl}/api/checkout/complete?booking=${booking.id}&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${config.baseUrl}/book/${encodeURIComponent(offer.id)}?cancelled=1`,
+      expires_at: Math.floor(Date.now() / 1000) + 30 * 60,
+    },
+    { idempotencyKey: `checkout_${booking.id}` }
+  );
   booking.stripeSessionId = session.id;
   await saveBooking(booking);
   return { bookingId: booking.id, redirectUrl: session.url! };

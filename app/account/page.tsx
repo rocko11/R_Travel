@@ -4,6 +4,8 @@ import { currentUser } from "@/lib/auth";
 import { bookingsForUser } from "@/lib/store";
 import { jetRequestsForUser } from "@/lib/jetRequests";
 import { JET_CLASSES } from "@/lib/jets";
+import { plansForUser } from "@/lib/savedPlans";
+import { conciergeForUser, CONCIERGE_SERVICES, CONCIERGE_STATUS_LABEL } from "@/lib/concierge";
 import { day, money, time } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -20,6 +22,8 @@ export default async function AccountPage() {
   if (!user) redirect("/account/login?next=/account");
   const bookings = await bookingsForUser(user.id);
   const jets = await jetRequestsForUser(user.id);
+  const cc = await conciergeForUser(user.id);
+  const plans = await plansForUser(user.id);
   const today = new Date().toISOString().slice(0, 10);
   const upcoming = bookings.filter((b) => b.offer.slices[0].departAt.slice(0, 10) >= today);
   const past = bookings.filter((b) => b.offer.slices[0].departAt.slice(0, 10) < today);
@@ -60,13 +64,49 @@ export default async function AccountPage() {
         <span className="muted" style={{ fontSize: 14 }}>{user.name} · {user.email}</span>
       </div>
 
-      {bookings.length === 0 && jets.length === 0 && (
+      {bookings.length === 0 && jets.length === 0 && cc.length === 0 && plans.length === 0 && (
         <div className="card state" style={{ marginTop: 20 }}>
           <p>No trips yet. Flights you book while signed in will show up here.</p>
           <Link href="/" className="btn small" style={{ display: "inline-flex", alignItems: "center", textDecoration: "none" }}>Search flights</Link>
         </div>
       )}
       {upcoming.length > 0 && (<><h2 className="trip-h">Upcoming</h2>{list(upcoming)}</>)}
+      {plans.length > 0 && (
+        <>
+          <h2 className="trip-h">Saved trip plans</h2>
+          {plans.map((p) => (
+            <Link key={p.id} href={`/planner?plan=${p.id}`} className="card trip">
+              <div>
+                <div className="trip-route">{p.title}</div>
+                <div className="muted" style={{ fontSize: 14 }}>
+                  {p.city} · {day(p.start)} · {p.days.length} day{p.days.length > 1 ? "s" : ""}
+                </div>
+                <div className="tiny">Updated {new Date(p.updatedAt).toLocaleDateString("en-US", { timeZone: "America/New_York" })}</div>
+              </div>
+              <div style={{ textAlign: "right" }}><span className="chip">Open and edit</span></div>
+            </Link>
+          ))}
+        </>
+      )}
+      {cc.length > 0 && (
+        <>
+          <h2 className="trip-h">Concierge requests</h2>
+          {cc.map((r) => (
+            <div key={r.id} className="card trip">
+              <div>
+                <div className="trip-route">{r.city}</div>
+                <div className="muted" style={{ fontSize: 14 }}>
+                  {day(r.startDate)}{r.endDate ? ` – ${day(r.endDate)}` : ""} · {r.guests} guest{r.guests > 1 ? "s" : ""}
+                </div>
+                <div className="tiny">{r.services.map((s) => CONCIERGE_SERVICES.find((x) => x.id === s)?.label).join(" · ")}</div>
+              </div>
+              <div style={{ textAlign: "right" }}>
+                <span className={`chip ${r.status === "confirmed" ? "good" : ""}`}>{CONCIERGE_STATUS_LABEL[r.status]}</span>
+              </div>
+            </div>
+          ))}
+        </>
+      )}
       {jets.length > 0 && (
         <>
           <h2 className="trip-h">Private jet requests</h2>

@@ -50,10 +50,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               <Link href="/">Flights</Link>
               <Link href="/jets">Private jets</Link>
               <Link href="/destinations">Destinations</Link>
+              <Link href="/planner">Trip planner</Link>
+              <Link href="/concierge">Concierge</Link>
               <span aria-disabled title="Coming in the next phase">Hotels</span>
               {user ? (
                 <>
-                  {isAdmin(user.email) && <Link href="/admin/jets">Jet requests</Link>}
+                  {isAdmin(user.email) && <Link href="/admin">Admin</Link>}
                   <Link href="/account" className="cta">My trips</Link>
                   <form action="/api/auth/logout" method="post">
                     <button className="linkbtn" type="submit">Sign out</button>
@@ -73,6 +75,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <Link href="/faq">R Travel FAQ</Link>
             <Link href="/destinations">R Travel destination guides</Link>
             <Link href="/jets">R Travel private jets</Link>
+            <Link href="/concierge">R Travel concierge</Link>
           </nav>
           © {new Date().getFullYear()} R Travel. Prices include all taxes and our service fee. Fares are set by the airline and may change until ticketed.
         </footer>

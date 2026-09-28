@@ -1,3 +1,6 @@
+import { EXTRAS, NEW_GUIDES } from "./guides20";
+import { MORE } from "./guides20b";
+
 /**
  * Destination guides. Plain data, safe in the browser.
  * iata lists every code a search might use for the place (city code + airports).
@@ -15,9 +18,33 @@ export interface Destination {
   todo: { title: string; text: string }[];
   neighborhoods: string;
   tip: string;
+  // Full-guide fields (top-20 cities)
+  region?: string;
+  arrivals?: string; // e.g. "30.3M international visitors (2025)"
+  airport?: string;
+  gettingAround?: string;
+  food?: string[];
+  currency?: string;
+  language?: string;
+  goodToKnow?: string[];
+  tours?: Tour[];
+  hotels?: { name: string; area: string; tier: "Luxury" | "Mid-range" | "Value" }[];
+  transit?: string[];
+  events?: { name: string; when: string; text: string }[];
+  nightlife?: string;
+  sports?: string;
 }
 
-export const DESTINATIONS: Destination[] = [
+/** Tours R Travel plans to offer; shown as "coming soon" with a notify-me signup. */
+export interface Tour {
+  id: string;
+  name: string;
+  duration: string;
+  summary: string;
+  highlights: string[];
+}
+
+const BASE: Destination[] = [
   {
     slug: "tel-aviv", name: "Tel Aviv", country: "Israel", iata: ["TLV"], mainAirport: "TLV",
     tagline: "Beaches, Bauhaus and a city that never slows down.",
@@ -242,6 +269,18 @@ export const DESTINATIONS: Destination[] = [
     neighborhoods: "The canal ring or Jordaan for charm; De Pijp for food.",
     tip: "Watch for bikes; stay out of red bike lanes.",
   },
+];
+
+/** Short guides, upgraded to full guides where extra data exists, plus the new top-20 guides. */
+export const DESTINATIONS: Destination[] = [...BASE.map((d) => ({ ...d, ...EXTRAS[d.slug] })), ...NEW_GUIDES].map((d) => ({
+  ...d,
+  ...MORE[d.slug],
+}));
+
+/** The 20 most-visited / top-ranked cities (Euromonitor 2025). */
+export const TOP20 = [
+  "bangkok", "hong-kong", "london", "macau", "istanbul", "dubai", "mecca", "antalya", "paris", "kuala-lumpur",
+  "madrid", "tokyo", "rome", "milan", "singapore", "seoul", "osaka", "taipei", "kyoto", "new-york",
 ];
 
 export function destinationForIata(iata?: string | null) {

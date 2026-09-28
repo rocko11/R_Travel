@@ -134,6 +134,25 @@ function Results() {
           {sp.get("origin") && sp.get("destination") && (
             <WeatherStrip origin={sp.get("origin")!} destination={sp.get("destination")!} date={sp.get("departDate") ?? undefined} />
           )}
+          {sp.get("destination") && sp.get("departDate") && (
+            <a
+              className="card plan-cta"
+              href={`/planner?${new URLSearchParams({
+                iata: sp.get("destination")!,
+                label: sp.get("toLabel") || sp.get("destination")!,
+                start: sp.get("departDate")!,
+                days: String(
+                  sp.get("returnDate")
+                    ? Math.max(1, Math.min(10, Math.round((Date.parse(sp.get("returnDate")!) - Date.parse(sp.get("departDate")!)) / 86_400_000)))
+                    : 3
+                ),
+                travelers: String(Number(sp.get("adults") || 1) + (sp.get("childAges") || "").split(",").filter(Boolean).length),
+              })}`}
+            >
+              <b>Plan your days in {(sp.get("toLabel") || sp.get("destination"))!.replace(/ \(.*\)$/, "")}</b>
+              <span className="muted">3 day-by-day plans for your dates. Save, edit or mix them. →</span>
+            </a>
+          )}
           {top && (
             <div className="card sortbar" role="group" aria-label="Sort">
               <button aria-pressed={sort === "best"} onClick={() => setSort("best")}>

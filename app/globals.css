@@ -271,3 +271,59 @@ button, input, select { font: inherit; color: inherit; }
 .cab-table thead th { font-size: 14px; }
 .cab-table tbody th { color: var(--ink-3); font-weight: 500; white-space: nowrap; }
 .cab-table tbody tr:first-child td { font-weight: 700; font-size: 15px; }
+
+/* Full guides */
+.guide-badge { display: inline-block; margin: 10px 0 0; padding: 4px 10px; border-radius: 999px; background: var(--brand-soft); color: var(--brand); font-size: 13px; font-weight: 600; }
+.guide-nav { display: flex; flex-wrap: wrap; gap: 6px 16px; padding: 10px 0 4px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); margin-bottom: 16px; }
+.guide-nav a { font-size: 14px; color: var(--ink-2); text-decoration: none; }
+.guide-nav a:hover { color: var(--brand); }
+.guide-sec { scroll-margin-top: 16px; }
+.guide-sec p { line-height: 1.6; }
+.guide-h3 { font-size: 16px; margin: 16px 0 6px; }
+.guide-list { margin: 0; padding-left: 20px; color: var(--ink-2); line-height: 1.6; }
+.hotel-grid, .event-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; margin: 10px 0; }
+.hotel-card, .event-card { padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+.event-when { font-size: 12px; font-weight: 700; color: var(--brand); text-transform: uppercase; letter-spacing: 0.05em; }
+.tour-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.tour-card { padding: 16px; display: flex; flex-direction: column; gap: 6px; }
+.tour-card p { margin: 0; color: var(--ink-2); font-size: 14px; }
+.tour-card ul { margin: 0; padding-left: 18px; color: var(--ink-2); font-size: 13px; }
+.tour-name { font-size: 16px; }
+.tour-soon { align-self: flex-start; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--warn); background: var(--warn-soft); padding: 2px 8px; border-radius: 999px; }
+.tour-notify { display: flex; gap: 6px; flex-wrap: wrap; margin-top: auto; padding-top: 8px; }
+.tour-notify input { flex: 1; min-width: 140px; border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; background: var(--surface); }
+.tour-done { font-size: 13px; color: var(--good); margin-top: auto; padding-top: 8px; }
+.dest-group { font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-3); margin: 28px 0 0; }
+
+/* Concierge */
+.svc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 8px; }
+.svc { display: flex; gap: 10px; align-items: center; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; cursor: pointer; font-size: 14px; background: var(--surface); }
+.svc.on { border-color: var(--brand); background: var(--brand-soft); }
+.textarea { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; font-size: 15px; background: var(--surface); color: var(--ink); font: inherit; resize: vertical; }
+.textarea:focus { outline: 0; border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-soft); }
+
+/* Trip planner */
+.planner-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 110px; gap: 8px; }
+@media (max-width: 700px) { .planner-grid { grid-template-columns: 1fr; } }
+.plan-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 20px 0 14px; }
+@media (max-width: 760px) { .plan-tabs { grid-template-columns: 1fr; } }
+.plan-tab { text-align: left; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px; cursor: pointer; }
+.plan-tab[aria-selected="true"] { border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-soft); }
+.plan-opt { font-size: 12px; font-weight: 700; color: var(--brand); text-transform: uppercase; letter-spacing: 0.05em; }
+.plan-days { display: grid; gap: 12px; }
+.plan-day { padding: 16px 18px; }
+.plan-day-h { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; margin-bottom: 8px; font-size: 16px; }
+.plan-slot { display: grid; grid-template-columns: 96px 1fr; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); }
+.plan-time { font-size: 12px; font-weight: 700; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.05em; padding-top: 3px; }
+.plan-book { font-size: 13px; font-weight: 600; color: var(--brand); text-decoration: none; display: inline-block; margin-top: 4px; }
+.nav { flex-wrap: wrap; justify-content: flex-end; }
+.plan-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+.plan-select { border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; background: var(--surface); font-size: 13px; max-width: 100%; }
+.plan-theme { width: 100%; border: 0; border-bottom: 1px dashed var(--line); padding: 4px 0 8px; margin-bottom: 4px; font-size: 14px; color: var(--ink-2); background: transparent; }
+.plan-edit { grid-template-columns: 120px 1fr; align-items: start; }
+.plan-input { width: 100%; border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; background: var(--surface); color: var(--ink); font: inherit; font-size: 14px; margin-bottom: 6px; resize: vertical; }
+.plan-input:first-child { font-weight: 600; }
+.plan-row-actions { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+@media (max-width: 560px) { .plan-edit { grid-template-columns: 1fr; } .plan-slot { grid-template-columns: 1fr; } }
+.plan-cta { display: flex; flex-direction: column; gap: 2px; padding: 14px 18px; margin-bottom: 12px; text-decoration: none; border-color: var(--brand); background: var(--brand-soft); }
+.plan-cta b { color: var(--brand); font-size: 16px; }

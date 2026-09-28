@@ -47,6 +47,27 @@ export default async function BookingPage({ params }: { params: Promise<{ id: st
           <div className="line"><span>Service fee</span><span>{money(b.markup, b.currency)}</span></div>
           <div className="line total"><span>{b.status === "failed" ? "Total (not charged or refunded)" : "Total paid"}</span><span>{money(b.total, b.currency)}</span></div>
         </div>
+        {b.status === "confirmed" && (() => {
+          const out = b.offer.slices[0];
+          const back = b.offer.slices[1];
+          const arrive = out.arriveAt;
+          const days = back ? Math.max(1, Math.min(10, Math.round((Date.parse(back.departAt.slice(0, 10)) - Date.parse(arrive.slice(0, 10))) / 86_400_000) + 1)) : 3;
+          const q = new URLSearchParams({
+            iata: out.destination,
+            label: out.destination,
+            start: arrive.slice(0, 10),
+            days: String(days),
+            arrive: arrive.slice(11, 16),
+            travelers: String(b.passengers.length),
+            ...(back ? { leave: back.departAt.slice(11, 16) } : {}),
+          });
+          return (
+            <a className="card plan-cta" href={`/planner?${q}`} style={{ margin: "16px 0" }}>
+              <b>Plan your trip</b>
+              <span className="muted">Three day-by-day plans built around your flight times. Save and edit them anytime. →</span>
+            </a>
+          );
+        })()}
         <p className="tiny">Booking ID {b.id}</p>
         {b.userId && (
           <Link href="/account" className="btn small" style={{ display: "inline-flex", alignItems: "center", textDecoration: "none", marginRight: 8 }}>My trips</Link>

@@ -4,6 +4,8 @@ import { currentUser } from "@/lib/auth";
 import { bookingsForUser } from "@/lib/store";
 import { jetRequestsForUser } from "@/lib/jetRequests";
 import { JET_CLASSES } from "@/lib/jets";
+import { cruiseRequestsForUser } from "@/lib/cruiseRequests";
+import { CRUISE_SHIPS, SUITE_LABEL } from "@/lib/cruises";
 import { plansForUser } from "@/lib/savedPlans";
 import { conciergeForUser, CONCIERGE_SERVICES, CONCIERGE_STATUS_LABEL } from "@/lib/concierge";
 import { day, money, time } from "@/lib/format";
@@ -22,6 +24,7 @@ export default async function AccountPage() {
   if (!user) redirect("/account/login?next=/account");
   const bookings = await bookingsForUser(user.id);
   const jets = await jetRequestsForUser(user.id);
+  const cruises = await cruiseRequestsForUser(user.id);
   const cc = await conciergeForUser(user.id);
   const plans = await plansForUser(user.id);
   const today = new Date().toISOString().slice(0, 10);
@@ -64,7 +67,7 @@ export default async function AccountPage() {
         <span className="muted" style={{ fontSize: 14 }}>{user.name} · {user.email}</span>
       </div>
 
-      {bookings.length === 0 && jets.length === 0 && cc.length === 0 && plans.length === 0 && (
+      {bookings.length === 0 && jets.length === 0 && cruises.length === 0 && cc.length === 0 && plans.length === 0 && (
         <div className="card state" style={{ marginTop: 20 }}>
           <p>No trips yet. Flights you book while signed in will show up here.</p>
           <Link href="/" className="btn small" style={{ display: "inline-flex", alignItems: "center", textDecoration: "none" }}>Search flights</Link>
@@ -126,6 +129,29 @@ export default async function AccountPage() {
               </div>
             </div>
           ))}
+        </>
+      )}
+      {cruises.length > 0 && (
+        <>
+          <h2 className="trip-h">Luxury cruise requests</h2>
+          {cruises.map((r) => {
+            const ship = CRUISE_SHIPS.find((s) => s.id === r.shipId);
+            return (
+              <div key={r.id} className="card trip">
+                <div>
+                  <div className="trip-route">{r.region === "any" ? "Anywhere" : r.region}{ship ? ` — ${ship.line} ${ship.ship}` : ""}</div>
+                  <div className="muted" style={{ fontSize: 14 }}>
+                    {r.departMonth} · {r.nights} nights · {r.guests} guest{r.guests > 1 ? "s" : ""} · {SUITE_LABEL[r.suite]}
+                  </div>
+                </div>
+                <div style={{ textAlign: "right" }}>
+                  <span className={`chip ${r.status === "booked" ? "good" : ""}`}>
+                    {{ new: "Quote requested", quoted: "Quote sent", booked: "Booked", closed: "Closed" }[r.status]}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
         </>
       )}
       {past.length > 0 && (<><h2 className="trip-h">Past</h2>{list(past)}</>)}

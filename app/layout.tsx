@@ -58,6 +58,7 @@ gtag('config', 'G-QFJ5D8J4BS');`}
             <nav className="nav">
               <Link href="/">Flights</Link>
               <Link href="/jets">Private jets</Link>
+              <Link href="/cruises">Luxury cruises</Link>
               <Link href="/destinations">Destinations</Link>
               <Link href="/planner">Trip planner</Link>
               <Link href="/concierge">Concierge</Link>
@@ -84,6 +85,7 @@ gtag('config', 'G-QFJ5D8J4BS');`}
             <Link href="/faq">R Travel FAQ</Link>
             <Link href="/destinations">R Travel destination guides</Link>
             <Link href="/jets">R Travel private jets</Link>
+            <Link href="/cruises">R Travel luxury cruises</Link>
             <Link href="/concierge">R Travel concierge</Link>
           </nav>
           © {new Date().getFullYear()} R Travel. Prices include all taxes and our service fee. Fares are set by the airline and may change until ticketed.

@@ -31,7 +31,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <div className="wrap">
             <Link href="/" className="brand">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/logo.svg" alt="" width={52} height={52} className="brand-logo" /> {brand}
+              <img src="/logo.svg" alt="" width={104} height={104} className="brand-logo" />
+              <span className="brand-text">
+                <span className="brand-name">{brand}</span>
+                <span className="brand-slogan">R you Traveling with us</span>
+              </span>
             </Link>
             <nav className="nav">
               <Link href="/">Flights</Link>

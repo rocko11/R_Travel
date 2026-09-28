@@ -37,10 +37,36 @@ export function hotelsForSlug(slug?: string): HotelOption[] {
 }
 
 /** Find a destination guide by its display name (case-insensitive), for free-text city input. */
-export function destinationByName(name: string): Destination | undefined {
+function destinationByName(name: string): Destination | undefined {
   const n = name.trim().toLowerCase();
   if (!n) return undefined;
   return DESTINATIONS.find((d) => n === d.name.toLowerCase() || n.startsWith(`${d.name.toLowerCase()},`) || n === `${d.name.toLowerCase()}, ${d.country.toLowerCase()}`);
+}
+
+/** Find a destination guide by IATA city or airport code (e.g. "CDG", "PAR", "par"). */
+function destinationByCode(code: string): Destination | undefined {
+  const c = code.trim().toUpperCase();
+  if (!/^[A-Z]{3}$/.test(c)) return undefined;
+  return DESTINATIONS.find((d) => d.iata.includes(c) || d.mainAirport === c);
+}
+
+/**
+ * Match a destination guide from free-text search input: a bare or trailing airport/city
+ * code ("CDG", "Paris (CDG)") takes priority, otherwise falls back to matching the name.
+ */
+export function matchDestination(input: string): Destination | undefined {
+  const raw = input.trim();
+  if (!raw) return undefined;
+  const trailingCode = raw.match(/\(([A-Za-z]{3})\)\s*$/);
+  if (trailingCode) {
+    const byCode = destinationByCode(trailingCode[1]);
+    if (byCode) return byCode;
+  }
+  if (/^[A-Za-z]{3}$/.test(raw)) {
+    const byCode = destinationByCode(raw);
+    if (byCode) return byCode;
+  }
+  return destinationByName(raw);
 }
 
 export interface HotelEstimate {

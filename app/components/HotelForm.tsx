@@ -3,8 +3,9 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { DESTINATIONS, destinationBySlug } from "@/lib/destinations";
-import { ROOM_LABEL, destinationByName, estimateHotels, type RoomType } from "@/lib/hotels";
+import AirportInput, { type PlaceValue } from "./AirportInput";
+import { destinationBySlug } from "@/lib/destinations";
+import { ROOM_LABEL, estimateHotels, matchDestination, type RoomType } from "@/lib/hotels";
 import { money } from "@/lib/format";
 
 const iso = (d: Date) => d.toISOString().slice(0, 10);
@@ -14,7 +15,9 @@ export default function HotelForm() {
   const preset = destinationBySlug(sp.get("city") ?? "");
   const today = iso(new Date());
 
-  const [destination, setDestination] = useState(preset ? `${preset.name}, ${preset.country}` : "");
+  const [place, setPlace] = useState<PlaceValue | null>(
+    preset ? { iata: preset.mainAirport, label: `${preset.name} (${preset.mainAirport})` } : null
+  );
   const [checkIn, setCheckIn] = useState(iso(new Date(Date.now() + 14 * 86_400_000)));
   const [checkOut, setCheckOut] = useState(iso(new Date(Date.now() + 17 * 86_400_000)));
   const [guests, setGuests] = useState(2);
@@ -44,7 +47,7 @@ export default function HotelForm() {
     if (checkOut <= checkIn) setCheckOut(iso(new Date(Date.parse(checkIn) + 3 * 86_400_000)));
   }, [checkIn, checkOut]);
 
-  const matched = useMemo(() => destinationByName(destination), [destination]);
+  const matched = useMemo(() => (place ? matchDestination(place.iata) : undefined), [place]);
   const nights = Math.max(1, Math.round((Date.parse(checkOut) - Date.parse(checkIn)) / 86_400_000));
   const estimates = useMemo(() => estimateHotels(matched?.slug, nights, roomType), [matched, nights, roomType]);
   useEffect(() => {
@@ -54,7 +57,7 @@ export default function HotelForm() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!destination.trim()) return setError("Enter a city or destination.");
+    if (!place) return setError("Choose a city or airport.");
     setBusy(true);
     setError("");
     try {
@@ -62,7 +65,7 @@ export default function HotelForm() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          destination,
+          destination: place.label,
           slug: matched?.slug,
           hotelName: hotelName === "any" ? undefined : hotelName,
           checkIn,
@@ -106,15 +109,9 @@ export default function HotelForm() {
 
   return (
     <form onSubmit={submit}>
-      <datalist id="hotel-cities">
-        {DESTINATIONS.map((d) => <option key={d.slug} value={`${d.name}, ${d.country}`} />)}
-      </datalist>
       <div className="card search">
         <div className="jet-grid">
-          <div className="field">
-            <label htmlFor="hcity">City or destination</label>
-            <input id="hcity" list="hotel-cities" required placeholder="Paris, France" value={destination} onChange={(e) => setDestination(e.target.value)} />
-          </div>
+          <AirportInput id="hcity" label="City or airport" placeholder="City or airport code" value={place} onChange={setPlace} />
           <div className="field">
             <label htmlFor="hin">Check-in</label>
             <input id="hin" type="date" min={today} value={checkIn} onChange={(e) => setCheckIn(e.target.value)} required />
@@ -152,7 +149,7 @@ export default function HotelForm() {
         </p>
       ) : (
         <p className="muted" style={{ marginTop: -4 }}>
-          {destination.trim() ? "No guide yet for this destination — we'll hand-pick hotels and send options." : "Type a city to see hotels from our guides, or any destination — we'll still source it."}
+          {place ? "No guide yet for this destination — we'll hand-pick hotels and send options." : "Search a city or airport code to see hotels from our guides, or any destination — we'll still source it."}
         </p>
       )}
       {estimates.length > 0 && (

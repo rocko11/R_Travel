@@ -19,6 +19,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const user = await currentUser();
   return (
     <html lang="en">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        {/* eslint-disable-next-line @next/next/no-page-custom-font */}
+        <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
+      </head>
       <body>
         {config.mode !== "live" && (
           <div className="banner">
@@ -33,7 +39,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/logo.svg" alt="" width={104} height={104} className="brand-logo" />
               <span className="brand-text">
-                <span className="brand-name">{brand}</span>
+                <span className="brand-name">
+                  {brand.split(" ")[0]}{" "}
+                  <span className="brand-formal">{brand.split(" ").slice(1).join(" ")}</span>
+                </span>
                 <span className="brand-slogan">R you Traveling with us</span>
               </span>
             </Link>

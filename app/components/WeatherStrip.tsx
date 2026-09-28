@@ -31,18 +31,26 @@ function useWeather(iata?: string, date?: string) {
 }
 
 function Cell({ w, role }: { w: W | null | undefined; role: string }) {
-  if (w === undefined) return <div className="wx"><span className="wx-icon wx-load" /> <span className="tiny">{role}…</span></div>;
+  if (w === undefined) return <div className="wx"><span className="wx-icon wx-load" /> <span className="wx-role">{role}…</span></div>;
   if (!w) return null;
+  const when =
+    w.kind === "forecast"
+      ? new Date(w.date + "T12:00:00Z").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", timeZone: "UTC" })
+      : "Right now";
   return (
     <div className="wx" title={w.label}>
       <span className="wx-icon" aria-hidden>{w.icon}</span>
       <div>
-        <div className="wx-city">{w.city} <span className="tiny">({w.iata})</span></div>
-        <div className="tiny">
-          {w.kind === "forecast"
-            ? `${w.label} · ${w.high}° / ${w.low}°F on ${new Date(w.date + "T12:00:00Z").toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" })}`
-            : `${w.label} · ${w.temp}°F now`}
+        <div className="wx-role">{role}</div>
+        <div className="wx-city">{w.city} <span className="wx-code">{w.iata}</span></div>
+        <div className="wx-temp">
+          {w.kind === "forecast" ? (
+            <>{w.high}°<span className="wx-low"> / {w.low}°F</span></>
+          ) : (
+            <>{w.temp}°F</>
+          )}
         </div>
+        <div className="wx-label">{w.label} · {when}</div>
       </div>
     </div>
   );

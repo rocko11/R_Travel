@@ -48,8 +48,12 @@ export default function HotelForm() {
   }, [checkIn, checkOut]);
 
   const matched = useMemo(() => (place ? matchDestination(place.iata) : undefined), [place]);
+  const destInput = useMemo(
+    () => (place ? { slug: matched?.slug, code: place.iata, city: place.label.replace(/\s*\([^)]*\)\s*$/, "") } : undefined),
+    [place, matched]
+  );
   const nights = Math.max(1, Math.round((Date.parse(checkOut) - Date.parse(checkIn)) / 86_400_000));
-  const estimates = useMemo(() => estimateHotels(matched?.slug, nights, roomType), [matched, nights, roomType]);
+  const estimates = useMemo(() => estimateHotels(destInput, nights, roomType), [destInput, nights, roomType]);
   useEffect(() => {
     if (hotelName !== "any" && !estimates.some((e) => e.hotel.name === hotelName)) setHotelName("any");
   }, [estimates, hotelName]);
@@ -143,14 +147,13 @@ export default function HotelForm() {
       </div>
 
       <h2 className="jet-h">Choose a hotel</h2>
-      {matched ? (
+      {place ? (
         <p className="muted" style={{ marginTop: -4 }}>
-          {estimates.length} hotel{estimates.length !== 1 ? "s" : ""} in our {matched.name} guide. Estimates are per room, for {nights} night{nights > 1 ? "s" : ""}, {rooms} room{rooms > 1 ? "s" : ""} total below.
+          {estimates.length} hotel{estimates.length !== 1 ? "s" : ""} in {destInput?.city}
+          {matched ? ", including our destination guide's picks" : ""}. Estimates are per room, for {nights} night{nights > 1 ? "s" : ""}, {rooms} room{rooms > 1 ? "s" : ""} total below.
         </p>
       ) : (
-        <p className="muted" style={{ marginTop: -4 }}>
-          {place ? "No guide yet for this destination — we'll hand-pick hotels and send options." : "Search a city or airport code to see hotels from our guides, or any destination — we'll still source it."}
-        </p>
+        <p className="muted" style={{ marginTop: -4 }}>Search a city or airport code above to see hotels to choose from.</p>
       )}
       {estimates.length > 0 && (
         <div className="jet-cards" role="radiogroup" aria-label="Hotel">

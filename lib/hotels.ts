@@ -36,6 +36,49 @@ export function hotelsForSlug(slug?: string): HotelOption[] {
   return destinationBySlug(slug)?.hotels ?? [];
 }
 
+function rng(seed: string) {
+  let h = 2166136261;
+  for (let i = 0; i < seed.length; i++) h = Math.imul(h ^ seed.charCodeAt(i), 16777619);
+  return () => {
+    h = Math.imul(h ^ (h >>> 15), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    return ((h ^= h >>> 16) >>> 0) / 4294967296;
+  };
+}
+
+const LUXURY_NAMES = ["The Grand {city}", "{city} Palace Hotel", "The Sovereign {city}", "Villa Aurelia {city}", "The Meridian {city}"];
+const MID_NAMES = ["{city} Central Hotel", "Hotel {city} Plaza", "The Traveler's Inn {city}", "{city} Garden Hotel", "Hotel Bellevue {city}"];
+const VALUE_NAMES = ["{city} Budget Inn", "EasyStay {city}", "{city} Rooms & Suites", "The Backpacker {city}", "SimpleStay {city}"];
+const AREAS = ["City Center", "Old Town", "Downtown", "Near the Airport", "Waterfront District", "Business District", "Historic Quarter", "Station Area"];
+
+const fill = (tpl: string, city: string) => tpl.replace("{city}", city);
+
+/**
+ * Stand-in hotel inventory for a destination that has no R Travel guide yet, so every
+ * search still returns choosable options — same idea as the demo flight generator, seeded
+ * so the same destination always shows the same list. Replace with real supply once connected.
+ */
+function syntheticHotels(city: string, seed: string): HotelOption[] {
+  const r = rng(seed);
+  const pick = <T,>(arr: T[]) => arr[Math.floor(r() * arr.length)];
+  const used = new Set<string>();
+  const make = (tier: HotelTier, names: string[]): HotelOption => {
+    let name = fill(pick(names), city);
+    while (used.has(name)) name = `${fill(pick(names), city)} II`;
+    used.add(name);
+    return { name, area: pick(AREAS), tier };
+  };
+  return [make("Luxury", LUXURY_NAMES), make("Mid-range", MID_NAMES), make("Mid-range", MID_NAMES), make("Value", VALUE_NAMES), make("Value", VALUE_NAMES)];
+}
+
+/** Every choosable hotel for a destination: R Travel's own guide picks first, filled out with stand-in options. */
+export function hotelOptionsFor(dest: { slug?: string; code: string; city: string }): HotelOption[] {
+  const curated = hotelsForSlug(dest.slug);
+  const seen = new Set(curated.map((h) => h.name));
+  const filler = syntheticHotels(dest.city, dest.code).filter((h) => !seen.has(h.name));
+  return [...curated, ...filler].slice(0, 8);
+}
+
 /** Find a destination guide by its display name (case-insensitive), for free-text city input. */
 function destinationByName(name: string): Destination | undefined {
   const n = name.trim().toLowerCase();
@@ -75,10 +118,11 @@ export interface HotelEstimate {
   high: number;
 }
 
-/** One price estimate per hotel in the guide: per room, for the whole stay. */
-export function estimateHotels(slug: string | undefined, nights: number, room: RoomType): HotelEstimate[] {
+/** One price estimate per available hotel: per room, for the whole stay. */
+export function estimateHotels(dest: { slug?: string; code: string; city: string } | undefined, nights: number, room: RoomType): HotelEstimate[] {
+  if (!dest) return [];
   const mult = ROOM_MULT[room];
-  return hotelsForSlug(slug).map((hotel) => {
+  return hotelOptionsFor(dest).map((hotel) => {
     const [lo, hi] = TIER_RATE[hotel.tier];
     const round = (n: number) => Math.round(n / 10) * 10;
     return { hotel, low: round(lo * mult * nights), high: round(hi * mult * nights) };

@@ -132,9 +132,12 @@ export default async function DestinationPage({ params }: { params: Promise<{ sl
       )}
 
       {d.tours && (
-        <Section id="tours" title="R Travel tours">
-          <p className="muted">Tours we&apos;re preparing for {d.name}. Leave your email and we&apos;ll tell you first when they open.</p>
+        <Section id="tours" title="Local tours in R Travel">
+          <p className="muted">Our picks for {d.name}, plus more options once you search.</p>
           <TourCards city={d.slug} tours={d.tours} />
+          <Link href={`/tours?city=${d.slug}`} className="btn small" style={{ display: "inline-flex", alignItems: "center", textDecoration: "none", marginTop: 4 }}>
+            Book a tour in {d.name}
+          </Link>
         </Section>
       )}
 

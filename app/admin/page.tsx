@@ -5,7 +5,7 @@ import { allJetRequests, isAdmin } from "@/lib/jetRequests";
 import { allCruiseRequests } from "@/lib/cruiseRequests";
 import { allHotelRequests } from "@/lib/hotelRequests";
 import { allConcierge } from "@/lib/concierge";
-import { allTourInterest } from "@/lib/tourInterest";
+import { allTourRequests } from "@/lib/tourRequests";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "R Travel admin" };
@@ -18,14 +18,14 @@ export default async function AdminHome() {
     allCruiseRequests(),
     allHotelRequests(),
     allConcierge(),
-    allTourInterest(),
+    allTourRequests(),
   ]);
   const cards = [
     { href: "/admin/concierge", title: "Concierge requests", n: cc.filter((r) => r.status === "new").length, sub: `${cc.length} total` },
     { href: "/admin/hotels", title: "Hotel requests", n: hotels.filter((r) => r.status === "new").length, sub: `${hotels.length} total` },
+    { href: "/admin/tours", title: "Tour requests", n: tours.filter((r) => r.status === "new").length, sub: `${tours.length} total` },
     { href: "/admin/jets", title: "Private jet requests", n: jets.filter((r) => r.status === "new").length, sub: `${jets.length} total` },
     { href: "/admin/cruises", title: "Luxury cruise requests", n: cruises.filter((r) => r.status === "new").length, sub: `${cruises.length} total` },
-    { href: "/admin/tours", title: "Tour demand", n: tours.length, sub: "signups" },
   ];
   return (
     <main className="wrap" style={{ padding: "28px 16px 60px", maxWidth: 900 }}>
@@ -35,7 +35,7 @@ export default async function AdminHome() {
           <Link key={c.href} href={c.href} className="card dest-card">
             <b>{c.title}</b>
             <span style={{ fontSize: 32, fontWeight: 800 }}>{c.n}</span>
-            <span className="tiny">{c.href === "/admin/tours" ? c.sub : `new · ${c.sub}`}</span>
+            <span className="tiny">new · {c.sub}</span>
           </Link>
         ))}
       </div>

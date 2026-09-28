@@ -61,6 +61,7 @@ gtag('config', 'G-QFJ5D8J4BS');`}
               <Link href="/cruises">Luxury cruises</Link>
               <Link href="/destinations">Destinations</Link>
               <Link href="/hotels">Hotels</Link>
+              <Link href="/tours">Tours</Link>
               <Link href="/planner">Trip planner</Link>
               <Link href="/concierge">Concierge</Link>
               {user ? (
@@ -85,6 +86,7 @@ gtag('config', 'G-QFJ5D8J4BS');`}
             <Link href="/faq">R Travel FAQ</Link>
             <Link href="/destinations">R Travel destination guides</Link>
             <Link href="/hotels">R Travel hotels</Link>
+            <Link href="/tours">R Travel local tours</Link>
             <Link href="/jets">R Travel private jets</Link>
             <Link href="/cruises">R Travel luxury cruises</Link>
             <Link href="/concierge">R Travel concierge</Link>

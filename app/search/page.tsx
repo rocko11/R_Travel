@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import SearchForm from "../components/SearchForm";
 import { SliceRow } from "../components/Itinerary";
 import WeatherStrip from "../components/WeatherStrip";
+import CabinPanel from "../components/CabinPanel";
 import { duration, money } from "@/lib/format";
 import type { CabinClass, PricedOffer } from "@/lib/types";
 
@@ -172,6 +173,7 @@ function Results() {
                   {o.refundable && <span className="chip good">Refundable</span>}
                   {!o.refundable && o.changeable && <span className="chip">Changeable</span>}
                 </div>
+                <CabinPanel offer={o} />
               </div>
               <div className="offer-price">
                 <div>

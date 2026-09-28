@@ -54,7 +54,7 @@ button, input, select { font: inherit; color: inherit; }
 .brand-logo { width: 104px; height: 104px; border-radius: 24px; display: block; flex: none; }
 .brand-text { display: flex; flex-direction: column; line-height: 1; }
 .brand-name { font-size: 48px; font-weight: 800; letter-spacing: -0.03em; }
-.brand-formal { font-family: "Cinzel", Georgia, "Times New Roman", serif; font-weight: 700; letter-spacing: 0.02em; }
+.brand-formal { font-family: "Playfair Display", Georgia, "Times New Roman", serif; font-weight: 700; letter-spacing: 0.01em; }
 .brand-slogan { font-size: 20px; font-weight: 600; color: var(--brand); margin-top: 8px; letter-spacing: 0; font-style: italic; }
 @media (max-width: 700px) {
   .brand-logo { width: 64px; height: 64px; border-radius: 15px; }
@@ -252,3 +252,22 @@ button, input, select { font: inherit; color: inherit; }
 
 .wx-credit { font-size: 11px; color: var(--ink-3); text-decoration: none; }
 .wx-strip .wx-credit { order: 10; flex-basis: 100%; }
+
+/* Plane and cabins */
+.cab { border-top: 1px dashed var(--line); padding-top: 8px; }
+.cab-toggle { background: none; border: 0; padding: 4px 0; color: var(--brand); font-weight: 600; font-size: 13px; cursor: pointer; }
+.cab-body { display: grid; gap: 12px; padding-top: 8px; }
+.cab-dir { font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-3); margin-bottom: 6px; }
+.cab-segs { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+.cab-seg { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; font-size: 13px; background: var(--bg); }
+.cab-seg-head { color: var(--ink-2); }
+.cab-plane { font-weight: 600; margin: 4px 0; font-size: 14px; }
+.cab-name { font-size: 12px; font-weight: 700; color: var(--brand); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 6px; }
+.cab-facts, .cab-fare { margin: 4px 0 0; padding-left: 18px; color: var(--ink-2); font-size: 13px; }
+.cab-fare { display: flex; flex-wrap: wrap; gap: 4px 18px; padding-left: 16px; }
+.cab-table-wrap { overflow-x: auto; }
+.cab-table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 460px; }
+.cab-table th, .cab-table td { padding: 7px 10px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: middle; }
+.cab-table thead th { font-size: 14px; }
+.cab-table tbody th { color: var(--ink-3); font-weight: 500; white-space: nowrap; }
+.cab-table tbody tr:first-child td { font-weight: 700; font-size: 15px; }

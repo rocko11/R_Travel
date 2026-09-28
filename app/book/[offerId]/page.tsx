@@ -4,6 +4,7 @@ import { use, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { SliceDetail, SliceRow } from "../../components/Itinerary";
 import WeatherStrip from "../../components/WeatherStrip";
+import CabinPanel from "../../components/CabinPanel";
 import { money } from "@/lib/format";
 import type { PassengerInput, PricedOffer } from "@/lib/types";
 
@@ -142,6 +143,7 @@ export default function BookPage({ params }: { params: Promise<{ offerId: string
                 </div>
               ))}
             </div>
+            <CabinPanel offer={offer} allowCompare={false} startOpen />
           </section>
 
           <section className="card section">

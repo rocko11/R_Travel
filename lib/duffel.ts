@@ -1,6 +1,7 @@
 import "server-only";
 import { config } from "./config";
 import type {
+  CabinInfo,
   CabinClass,
   Offer,
   PassengerInput,
@@ -64,6 +65,13 @@ function mapOffer(o: any): Offer {
       arriveAt: g.arriving_at,
       durationMin: isoDurationToMin(g.duration),
       aircraft: g.aircraft?.name,
+      aircraftCode: g.aircraft?.iata_code ?? undefined,
+      operatedBy:
+        g.operating_carrier?.iata_code && g.operating_carrier.iata_code !== g.marketing_carrier?.iata_code
+          ? g.operating_carrier.name
+          : undefined,
+      cabin: mapCabin(g.passengers?.[0]),
+      fareBasis: g.passengers?.[0]?.fare_basis_code ?? undefined,
     }));
     return {
       origin: s.origin?.iata_code,
@@ -73,11 +81,14 @@ function mapOffer(o: any): Offer {
       durationMin: isoDurationToMin(s.duration),
       stops: segments.length - 1,
       segments,
+      fareBrand: s.fare_brand_name ?? undefined,
     };
   });
   const firstSegPax = o.slices?.[0]?.segments?.[0]?.passengers?.[0];
   const checked =
     firstSegPax?.baggages?.find((b: any) => b.type === "checked")?.quantity ?? 0;
+  const carryOn = firstSegPax?.baggages?.find((b: any) => b.type === "carry_on")?.quantity;
+  const penalty = (c: any) => (c?.allowed && c.penalty_amount != null ? Number(c.penalty_amount) : undefined);
   return {
     id: o.id,
     baseAmount: Number(o.total_amount),
@@ -97,6 +108,30 @@ function mapOffer(o: any): Offer {
     checkedBags: checked,
     refundable: Boolean(o.conditions?.refund_before_departure?.allowed),
     changeable: Boolean(o.conditions?.change_before_departure?.allowed),
+    carryOnBags: carryOn ?? undefined,
+    refundPenalty: penalty(o.conditions?.refund_before_departure),
+    changePenalty: penalty(o.conditions?.change_before_departure),
+    emissionsKg: o.total_emissions_kg != null ? Number(o.total_emissions_kg) : undefined,
+    cabinClass: firstSegPax?.cabin_class ?? undefined,
+  };
+}
+
+function mapCabin(p: any): CabinInfo | undefined {
+  if (!p) return undefined;
+  const a = p.cabin?.amenities ?? {};
+  const wifi = a.wifi
+    ? a.wifi.available === true || a.wifi.available === "true"
+      ? a.wifi.cost === "free" ? "free" : a.wifi.cost === "paid" ? "paid" : "yes"
+      : "no"
+    : undefined;
+  return {
+    cabinClass: p.cabin_class ?? p.cabin?.name ?? undefined,
+    marketingName: p.cabin_class_marketing_name ?? p.cabin?.marketing_name ?? undefined,
+    seatType: a.seat?.type ?? undefined,
+    pitch: a.seat?.pitch ?? undefined,
+    legroom: a.seat?.legroom ?? undefined,
+    wifi,
+    power: a.power ? a.power.available === true || a.power.available === "true" : undefined,
   };
 }
 

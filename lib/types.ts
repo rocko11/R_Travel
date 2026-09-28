@@ -30,6 +30,21 @@ export interface Segment {
   arriveAt: string;
   durationMin: number;
   aircraft?: string;
+  aircraftCode?: string;
+  operatedBy?: string; // operating carrier name when different from marketing
+  cabin?: CabinInfo;
+  fareBasis?: string;
+}
+
+/** What the traveler gets in the cabin on one flight. Airlines don't always send every field. */
+export interface CabinInfo {
+  cabinClass?: CabinClass;
+  marketingName?: string; // e.g. "Club World", "Main Cabin"
+  seatType?: string; // e.g. "Lie-flat bed", "Recliner"
+  pitch?: string; // inches
+  legroom?: string; // "less" | "more" | "n/a" as sent
+  wifi?: "free" | "paid" | "yes" | "no";
+  power?: boolean;
 }
 
 export interface Slice {
@@ -40,6 +55,7 @@ export interface Slice {
   durationMin: number;
   stops: number;
   segments: Segment[];
+  fareBrand?: string;
 }
 
 export interface OfferPassenger {
@@ -58,8 +74,13 @@ export interface Offer {
   passengers: OfferPassenger[];
   expiresAt: string;
   checkedBags: number; // per passenger on first segment
+  carryOnBags?: number;
   refundable: boolean;
   changeable: boolean;
+  refundPenalty?: number;
+  changePenalty?: number;
+  emissionsKg?: number;
+  cabinClass?: CabinClass;
 }
 
 /** Offer with the customer-facing price. */

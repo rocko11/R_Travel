@@ -3,6 +3,7 @@ import { config } from "./config";
 import * as duffel from "./duffel";
 import { demoOffer, demoOffers, demoPlaces } from "./demo";
 import { priceOffer } from "./pricing";
+import { flightKey } from "./flightKey";
 import type { ContactInput, Offer, PassengerInput, Place, PricedOffer, SearchParams } from "./types";
 
 const rule = () => ({ fixed: config.markupFixed, percent: config.markupPercent });
@@ -38,4 +39,23 @@ export async function issue(
     return { orderId: `ord_demo_${ref}`, bookingReference: ref };
   }
   return duffel.createOrder({ offer, passengers, contact });
+}
+
+/** Same flights as `key` (see flightKey), priced in every cabin class. */
+
+const CABINS = ["economy", "premium_economy", "business", "first"] as const;
+
+export async function compareCabins(q: SearchParams, key: string) {
+  const results = await Promise.all(
+    CABINS.map(async (cabin) => {
+      try {
+        const offers = await search({ ...q, cabin });
+        const match = offers.filter((o) => flightKey(o) === key).sort((a, b) => a.total - b.total)[0];
+        return [cabin, match ?? null] as const;
+      } catch {
+        return [cabin, null] as const;
+      }
+    })
+  );
+  return Object.fromEntries(results) as Record<(typeof CABINS)[number], PricedOffer | null>;
 }

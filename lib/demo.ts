@@ -1,5 +1,5 @@
 import "server-only";
-import type { Offer, Place, SearchParams, Segment, Slice } from "./types";
+import type { CabinClass, CabinInfo, Offer, Place, SearchParams, Segment, Slice } from "./types";
 
 /** Demo data: a small airport list with coordinates, used when no Duffel token is set. */
 const AIRPORTS: (Place & { lat: number; lon: number; tz: number })[] = [
@@ -150,7 +150,8 @@ export function demoOffers(q: SearchParams): Offer[] {
   const cabinMult = { economy: 1, premium_economy: 1.7, business: 3.8, first: 6 }[q.cabin];
   const paxWeight = q.adults + q.childAges.reduce((s, a) => s + (a < 2 ? 0.1 : 0.75), 0);
   const offers: Offer[] = [];
-  const r = rng(`${q.origin}${q.destination}${q.departDate}${q.returnDate ?? ""}${q.cabin}`);
+  // Same seed for every cabin, so the same flights appear in each class.
+  const r = rng(`${q.origin}${q.destination}${q.departDate}${q.returnDate ?? ""}`);
   for (let i = 0; i < 14; i++) {
     const carrier = CARRIERS[Math.floor(r() * CARRIERS.length)];
     const stops = km < 1500 ? (r() < 0.8 ? 0 : 1) : r() < 0.45 ? 0 : 1;
@@ -159,6 +160,7 @@ export function demoOffers(q: SearchParams): Offer[] {
     if (!out || (q.returnDate && !back)) continue;
     const perPax = (60 + km * 0.07) * (0.8 + r() * 0.6) * (stops ? 0.85 : 1) * cabinMult * (back ? 1.8 : 1);
     const refundable = r() < 0.3;
+    const bagRoll = r();
     offers.push({
       id: `demo_${Buffer.from(JSON.stringify({ q, i })).toString("base64url")}`,
       baseAmount: Math.round(perPax * paxWeight * (refundable ? 1.25 : 1) * 100) / 100,
@@ -174,12 +176,39 @@ export function demoOffers(q: SearchParams): Offer[] {
         })),
       ],
       expiresAt: new Date(Date.now() + 30 * 60_000).toISOString(),
-      checkedBags: cabinMult > 1 || r() < 0.4 ? 1 : 0,
+      checkedBags: bagRoll < 0.4 || cabinMult > 1 ? (q.cabin === "first" ? 2 : 1) : 0,
+      carryOnBags: 1,
+      cabinClass: q.cabin,
+      emissionsKg: Math.round(km * 0.09 * cabinMult ** 0.6 * (back ? 2 : 1)),
       refundable,
       changeable: refundable || r() < 0.5,
     });
   }
-  return offers;
+  return withDemoCabins(offers, q.cabin);
+}
+
+const DEMO_CABIN: Record<CabinClass, CabinInfo> = {
+  economy: { cabinClass: "economy", marketingName: "Economy", seatType: "Standard seat", pitch: "31", legroom: "standard", wifi: "paid", power: true },
+  premium_economy: { cabinClass: "premium_economy", marketingName: "Premium Economy", seatType: "Recliner", pitch: "38", legroom: "more", wifi: "paid", power: true },
+  business: { cabinClass: "business", marketingName: "Business", seatType: "Lie-flat bed", pitch: "78", legroom: "more", wifi: "free", power: true },
+  first: { cabinClass: "first", marketingName: "First", seatType: "Private suite", pitch: "82", legroom: "more", wifi: "free", power: true },
+};
+const DEMO_AIRCRAFT = [["Boeing 787-9", "789"], ["Airbus A350-900", "359"], ["Boeing 777-300ER", "77W"], ["Airbus A321neo", "32Q"], ["Boeing 737 MAX 8", "7M8"]];
+
+/** Add cabin and aircraft details to demo segments (deterministic per flight number). */
+export function withDemoCabins(offers: Offer[], cabin: CabinClass): Offer[] {
+  return offers.map((o) => ({
+    ...o,
+    slices: o.slices.map((s) => ({
+      ...s,
+      fareBrand: { economy: "Standard", premium_economy: "Premium", business: "Business Flex", first: "First" }[cabin],
+      segments: s.segments.map((g) => {
+        const n = Number(g.flightNumber.replace(/\D/g, "")) || 0;
+        const [name, code] = DEMO_AIRCRAFT[g.durationMin > 300 ? n % 3 : 3 + (n % 2)];
+        return { ...g, aircraft: name, aircraftCode: code, cabin: DEMO_CABIN[cabin] };
+      }),
+    })),
+  }));
 }
 
 export function demoOffer(id: string): Offer | null {

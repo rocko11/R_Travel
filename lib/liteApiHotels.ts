@@ -90,8 +90,12 @@ export async function searchCityRates(args: {
   if (!res.ok) {
     throw new LiteApiError(body?.error?.message || body?.message || `liteAPI request failed (${res.status})`, res.status);
   }
+  // Unlike /rates/prebook and /rates/book (which wrap their payload in a top-level "data"
+  // object), /hotels/rates returns { hotels: [...], data: [...] } directly with no outer
+  // envelope — confirmed against a live sandbox call. Reading body.data.hotels here always
+  // came back empty, so every offer below failed the `hotel` lookup and got filtered out.
   const hotelsById = new Map<string, LiteApiHotelInfo>();
-  for (const h of body?.data?.hotels ?? []) {
+  for (const h of body?.hotels ?? body?.data?.hotels ?? []) {
     hotelsById.set(h.id, {
       id: h.id,
       name: h.name,
@@ -103,12 +107,14 @@ export async function searchCityRates(args: {
     });
   }
   const out: LiteApiOffer[] = [];
-  for (const entry of body?.data?.data ?? body?.data ?? []) {
+  for (const entry of body?.data ?? []) {
     const roomType = entry.roomTypes?.[0];
     const rate = roomType?.rates?.[0];
     if (!rate) continue;
-    const total = rate.offerRetailRate?.[0]?.amount ?? rate.retailRate?.total?.[0]?.amount;
-    const currency = rate.offerRetailRate?.[0]?.currency ?? rate.retailRate?.total?.[0]?.currency ?? "USD";
+    // roomType.offerRetailRate is a single {amount, currency} object (already reflects the
+    // margin/markup we requested); rate.retailRate.total is the underlying array shape.
+    const total = roomType?.offerRetailRate?.amount ?? rate.retailRate?.total?.[0]?.amount;
+    const currency = roomType?.offerRetailRate?.currency ?? rate.retailRate?.total?.[0]?.currency ?? "USD";
     if (!total) continue;
     out.push({
       hotelId: entry.hotelId,

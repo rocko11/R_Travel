@@ -22,11 +22,18 @@ export const config = {
   amadeusEnv: (process.env.AMADEUS_ENV?.trim().toLowerCase() === "production" ? "production" : "test") as
     | "test"
     | "production",
+  /** Nuitee Connect / liteAPI key. "sand_..." keys return sandbox data only; "prod_..." are live. */
+  liteApiKey: process.env.LITEAPI_API_KEY?.trim() || "",
 };
 
 /** True once Amadeus API credentials are configured; hotel search stays on synthetic estimates until then. */
 export function amadeusEnabled(): boolean {
   return Boolean(config.amadeusClientId && config.amadeusClientSecret);
+}
+
+/** True once a liteAPI (Nuitee Connect) key is configured. */
+export function liteApiEnabled(): boolean {
+  return Boolean(config.liteApiKey);
 }
 
 /** Real money requires real card collection. */

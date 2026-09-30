@@ -1,13 +1,16 @@
 import "server-only";
-import { amadeusEnabled } from "./config";
+import { amadeusEnabled, liteApiEnabled } from "./config";
 import { searchCityOffers } from "./amadeusHotels";
+import { searchCityRates } from "./liteApiHotels";
+import { destinationBySlug } from "./destinations";
 import { estimateHotels, type HotelEstimate, type HotelTier, type RoomType } from "./hotels";
 
 /**
- * Bridges Amadeus live hotel search into R Travel's existing hotel-picker shape (HotelEstimate),
- * so the UI and the request-a-quote flow don't need to know whether a price is live or synthetic.
- * Falls back to the synthetic estimator whenever Amadeus isn't configured, returns nothing for
- * this city/dates, or errors — a hotel search should never fail just because live pricing did.
+ * Bridges live hotel search (liteAPI/Nuitee first, Amadeus second) into R Travel's existing
+ * hotel-picker shape (HotelEstimate), so the UI and the request-a-quote flow don't need to know
+ * whether a price is live or synthetic. Falls back down the chain whenever a provider isn't
+ * configured, returns nothing for this city/dates, or errors — a hotel search should never fail
+ * just because live pricing did.
  */
 
 // Amadeus/IATA city codes that differ from R Travel's mainAirport code for a destination.
@@ -29,6 +32,61 @@ const AMADEUS_CITY: Record<string, string> = {
 
 function amadeusCityCode(dest: { slug?: string; code: string }): string {
   return (dest.slug && AMADEUS_CITY[dest.slug]) || dest.code;
+}
+
+// Country names (as stored in destinations.ts) -> ISO 3166-1 alpha-2, for liteAPI's countryCode param.
+const COUNTRY_ISO2: Record<string, string> = {
+  Israel: "IL",
+  "United Kingdom": "GB",
+  France: "FR",
+  Italy: "IT",
+  Spain: "ES",
+  "United States": "US",
+  Mexico: "MX",
+  Japan: "JP",
+  "United Arab Emirates": "AE",
+  Thailand: "TH",
+  Greece: "GR",
+  Portugal: "PT",
+  Netherlands: "NL",
+};
+
+/** Live rates from liteAPI (Nuitee Connect), or null when it's not configured/usable for this city. */
+async function liteApiEstimates(
+  dest: { slug?: string; code: string; city: string } | undefined,
+  checkIn: string,
+  checkOut: string,
+  guests: number,
+  rooms: number
+): Promise<LiveHotelEstimate[] | null> {
+  if (!dest || !liteApiEnabled()) return null;
+  const destination = dest.slug ? destinationBySlug(dest.slug) : undefined;
+  const countryCode = destination ? COUNTRY_ISO2[destination.country] : undefined;
+  if (!countryCode) return null;
+  try {
+    const offers = await searchCityRates({
+      countryCode,
+      cityName: destination!.name,
+      checkin: checkIn,
+      checkout: checkOut,
+      adults: guests,
+      rooms,
+      marginPercent: 12,
+    });
+    if (!offers.length) return null;
+    return offers
+      .filter((o) => o.hotel?.name && o.cheapest.offerRetailRate > 0)
+      .sort((a, b) => a.cheapest.offerRetailRate - b.cheapest.offerRetailRate)
+      .slice(0, 8)
+      .map((o) => ({
+        hotel: { name: o.hotel!.name, area: o.hotel!.address || dest.city, tier: tierFromRating(o.hotel!.stars ?? o.hotel!.rating) },
+        low: Math.round(o.cheapest.offerRetailRate),
+        high: Math.round(o.cheapest.offerRetailRate),
+        live: true as const,
+      }));
+  } catch {
+    return null;
+  }
 }
 
 function tierFromRating(rating?: number): HotelTier {
@@ -89,7 +147,9 @@ export async function hotelEstimatesFor(
   roomType: RoomType
 ): Promise<{ source: "live" | "estimate"; hotels: HotelEstimate[] }> {
   const nights = Math.max(1, Math.round((Date.parse(checkOut) - Date.parse(checkIn)) / 86_400_000));
-  const live = await liveHotelEstimates(dest, checkIn, checkOut, guests, rooms);
-  if (live) return { source: "live", hotels: live };
+  const liteApi = await liteApiEstimates(dest, checkIn, checkOut, guests, rooms);
+  if (liteApi) return { source: "live", hotels: liteApi };
+  const amadeus = await liveHotelEstimates(dest, checkIn, checkOut, guests, rooms);
+  if (amadeus) return { source: "live", hotels: amadeus };
   return { source: "estimate", hotels: estimateHotels(dest, nights, roomType) };
 }

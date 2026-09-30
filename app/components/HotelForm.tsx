@@ -14,19 +14,39 @@ type View = "list" | "map";
 
 const iso = (d: Date) => d.toISOString().slice(0, 10);
 
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
 export default function HotelForm() {
   const sp = useSearchParams();
   const router = useRouter();
   const preset = destinationBySlug(sp.get("city") ?? "");
   const today = iso(new Date());
 
+  // A returning guest (e.g. clicking "Back to search" from a hotel's detail page, or
+  // the browser's own back button) should land on the same search, not an empty form —
+  // so the full search (not just the destination) is restored from the URL when present.
+  const qCode = sp.get("code");
+  const qLabel = sp.get("label");
+  const qIn = sp.get("in");
+  const qOut = sp.get("out");
+  const qGuests = Number(sp.get("guests"));
+  const qRooms = Number(sp.get("rooms"));
+
   const [place, setPlace] = useState<PlaceValue | null>(
-    preset ? { iata: preset.mainAirport, label: `${preset.name} (${preset.mainAirport})` } : null
+    qCode
+      ? { iata: qCode, label: qLabel || qCode, country: sp.get("country") || undefined }
+      : preset
+        ? { iata: preset.mainAirport, label: `${preset.name} (${preset.mainAirport})` }
+        : null
   );
-  const [checkIn, setCheckIn] = useState(iso(new Date(Date.now() + 14 * 86_400_000)));
-  const [checkOut, setCheckOut] = useState(iso(new Date(Date.now() + 17 * 86_400_000)));
-  const [guests, setGuests] = useState(2);
-  const [rooms, setRooms] = useState(1);
+  const [checkIn, setCheckIn] = useState(
+    qIn && DATE_RE.test(qIn) ? qIn : iso(new Date(Date.now() + 14 * 86_400_000))
+  );
+  const [checkOut, setCheckOut] = useState(
+    qOut && DATE_RE.test(qOut) ? qOut : iso(new Date(Date.now() + 17 * 86_400_000))
+  );
+  const [guests, setGuests] = useState(Number.isInteger(qGuests) && qGuests > 0 ? qGuests : 2);
+  const [rooms, setRooms] = useState(Number.isInteger(qRooms) && qRooms > 0 ? qRooms : 1);
   const [roomType, setRoomType] = useState<RoomType>("standard");
   const [hotelName, setHotelName] = useState<string | "any">("any");
   const [name, setName] = useState("");
@@ -51,6 +71,24 @@ export default function HotelForm() {
   useEffect(() => {
     if (checkOut <= checkIn) setCheckOut(iso(new Date(Date.parse(checkIn) + 3 * 86_400_000)));
   }, [checkIn, checkOut]);
+
+  // Keep the URL in sync with the search so it survives a page refresh, the browser's
+  // own back button, or "Back to search" from a hotel's detail page — without this the
+  // address bar always just read "/hotels" and every return landed on an empty form.
+  useEffect(() => {
+    if (!place) return;
+    const q = new URLSearchParams({
+      code: place.iata,
+      label: place.label,
+      in: checkIn,
+      out: checkOut,
+      guests: String(guests),
+      rooms: String(rooms),
+      ...(place.country ? { country: place.country } : {}),
+    });
+    router.replace(`/hotels?${q}`, { scroll: false });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [place, checkIn, checkOut, guests, rooms]);
 
   const matched = useMemo(() => (place ? matchDestination(place.iata) : undefined), [place]);
   const destInput = useMemo(
@@ -372,6 +410,10 @@ export default function HotelForm() {
                         name: e.hotel.name,
                         area: e.hotel.area,
                         dest: place?.label ?? "",
+                        // Carried through so "Back to search"/"Request a quote" on the detail
+                        // page can rebuild this exact search instead of landing on an empty form.
+                        ...(place ? { code: place.iata, label: place.label } : {}),
+                        ...(place?.country ? { country: place.country } : {}),
                         in: checkIn,
                         out: checkOut,
                         guests: String(guests),

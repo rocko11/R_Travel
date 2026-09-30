@@ -35,6 +35,9 @@ export default function HotelDetailPage({ params }: { params: Promise<{ id: stri
   const name = sp.get("name") || "This hotel";
   const area = sp.get("area") || "";
   const dest = sp.get("dest") || "";
+  const code = sp.get("code") || "";
+  const label = sp.get("label") || "";
+  const country = sp.get("country") || "";
   const checkIn = sp.get("in") || "";
   const checkOut = sp.get("out") || "";
   const guests = sp.get("guests") || "2";
@@ -74,12 +77,17 @@ export default function HotelDetailPage({ params }: { params: Promise<{ id: stri
     router.push(`/hotels/book/${encodeURIComponent(offerId)}?${q}`);
   };
 
+  // Rebuilds the exact search the guest came from (destination, dates, guests, rooms) so
+  // "Back to search" and "Request a quote" don't drop them on an empty form.
   const backToSearch = () => {
     const q = new URLSearchParams();
-    if (dest) q.set("city", dest);
+    if (code) q.set("code", code);
+    if (label) q.set("label", label);
+    if (country) q.set("country", country);
     if (checkIn) q.set("in", checkIn);
     if (checkOut) q.set("out", checkOut);
     if (guests) q.set("guests", guests);
+    if (rooms) q.set("rooms", String(rooms));
     q.set("hotel", name);
     return `/hotels?${q}`;
   };
@@ -87,7 +95,7 @@ export default function HotelDetailPage({ params }: { params: Promise<{ id: stri
   return (
     <div className="section">
       <p className="tiny" style={{ marginBottom: 10 }}>
-        <Link href="/hotels" style={{ color: "var(--brand)" }}>← Back to search</Link>
+        <Link href={backToSearch()} style={{ color: "var(--brand)" }}>← Back to search</Link>
       </p>
 
       {images.length > 0 && (

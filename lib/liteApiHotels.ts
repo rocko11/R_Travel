@@ -139,6 +139,69 @@ export async function searchCityRates(args: {
   return out;
 }
 
+export interface LiteApiHotelDetails {
+  id: string;
+  name: string;
+  description?: string;
+  images: { url: string; caption?: string }[];
+  address?: string;
+  city?: string;
+  country?: string;
+  lat?: number;
+  lng?: number;
+  starRating?: number;
+  rating?: number;
+  reviewCount?: number;
+  facilities: string[];
+  checkin?: string;
+  checkout?: string;
+  phone?: string;
+  poi: { name: string; category?: string; distanceKm?: number }[];
+}
+
+/** Full hotel content (description, photos, amenities, policies) for a hotel detail page. */
+export async function getHotelDetails(hotelId: string): Promise<LiteApiHotelDetails | null> {
+  if (!config.liteApiKey) return null;
+  const res = await fetch(`${HOST}/data/hotel?hotelId=${encodeURIComponent(hotelId)}`, {
+    headers: { "X-API-Key": config.liteApiKey, Accept: "application/json" },
+    cache: "no-store",
+  });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) return null;
+  const d = body?.data ?? body;
+  if (!d?.id && !d?.name) return null;
+  const images = (d.hotelImages ?? [])
+    .slice()
+    .sort((a: { order?: number }, b: { order?: number }) => (a.order ?? 0) - (b.order ?? 0))
+    .map((img: { urlHd?: string; url?: string; caption?: string }) => ({ url: img.urlHd || img.url, caption: img.caption }))
+    .filter((img: { url?: string }) => !!img.url);
+  const facilities: string[] = (d.hotelFacilities ?? d.facilities?.map((f: { name?: string }) => f.name) ?? []).filter(Boolean);
+  const poi = (d.poi ?? []).map((p: { name: string; category?: string; distanceKm?: number }) => ({
+    name: p.name,
+    category: p.category,
+    distanceKm: p.distanceKm,
+  }));
+  return {
+    id: d.id ?? hotelId,
+    name: d.name,
+    description: d.hotelDescription,
+    images,
+    address: d.address,
+    city: d.city,
+    country: d.country,
+    lat: d.location?.latitude != null ? Number(d.location.latitude) : undefined,
+    lng: d.location?.longitude != null ? Number(d.location.longitude) : undefined,
+    starRating: d.starRating != null ? Number(d.starRating) : undefined,
+    rating: d.rating != null ? Number(d.rating) : undefined,
+    reviewCount: d.reviewCount != null ? Number(d.reviewCount) : undefined,
+    facilities,
+    checkin: d.checkinCheckoutTimes?.checkin_start,
+    checkout: d.checkinCheckoutTimes?.checkout,
+    phone: d.phone,
+    poi,
+  };
+}
+
 export interface PrebookResult {
   prebookId: string;
   hotelId: string;

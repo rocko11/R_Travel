@@ -93,6 +93,7 @@ async function liteApiEstimates(
         .slice(0, 60)
         .map((o) => ({
           hotel: {
+            id: o.hotelId,
             name: o.hotel!.name,
             area: o.hotel!.address || dest.city,
             tier: tierFromRating(o.hotel!.stars ?? o.hotel!.rating),

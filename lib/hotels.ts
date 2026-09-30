@@ -28,6 +28,8 @@ export interface HotelOption {
   name: string;
   area: string;
   tier: HotelTier;
+  /** liteAPI hotel id, present only for a liteAPI live result — lets us link to a hotel detail page. */
+  id?: string;
   /** Real photo URL, present only for a live-priced hotel (liteAPI/Amadeus). */
   photo?: string;
   /** Real star rating (1-5), present only for a live-priced hotel. */

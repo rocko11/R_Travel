@@ -112,6 +112,12 @@ export default function HotelForm() {
     if (hotelName !== "any" && !estimates.some((e) => e.hotel.name === hotelName)) setHotelName("any");
   }, [estimates, hotelName]);
   useEffect(() => {
+    // Coming back from a hotel's detail page with ?hotel=<name> preselects it once rates load.
+    const wanted = sp.get("hotel");
+    if (wanted && estimates.some((e) => e.hotel.name === wanted)) setHotelName(wanted);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [estimates]);
+  useEffect(() => {
     setHiddenTiers(new Set());
     setMaxPrice("");
   }, [destInput?.code]);
@@ -326,13 +332,19 @@ export default function HotelForm() {
             </button>
 
             {filteredSorted.map((e) => (
-              <button
-                type="button"
+              <div
                 role="radio"
+                tabIndex={0}
                 aria-checked={hotelName === e.hotel.name}
                 key={e.hotel.name}
                 className="card hprop"
                 onClick={() => setHotelName(e.hotel.name)}
+                onKeyDown={(ev) => {
+                  if (ev.key === "Enter" || ev.key === " ") {
+                    ev.preventDefault();
+                    setHotelName(e.hotel.name);
+                  }
+                }}
               >
                 <div className="hprop-photo">
                   {e.hotel.photo ? (
@@ -354,6 +366,30 @@ export default function HotelForm() {
                     {e.live && <span className="chip good">Live rate</span>}
                     {e.offerId && <span className="chip good">Bookable now</span>}
                   </span>
+                  {e.hotel.id && (
+                    <Link
+                      href={`/hotels/${encodeURIComponent(e.hotel.id)}?${new URLSearchParams({
+                        name: e.hotel.name,
+                        area: e.hotel.area,
+                        dest: place?.label ?? "",
+                        in: checkIn,
+                        out: checkOut,
+                        guests: String(guests),
+                        rooms: String(rooms),
+                        low: String(e.low),
+                        high: String(e.high),
+                        ...(e.hotel.stars ? { stars: String(e.hotel.stars) } : {}),
+                        ...(e.hotel.photo ? { photo: e.hotel.photo } : {}),
+                        ...(e.hotel.lat != null ? { lat: String(e.hotel.lat) } : {}),
+                        ...(e.hotel.lng != null ? { lng: String(e.hotel.lng) } : {}),
+                        ...(e.offerId ? { offerId: e.offerId } : {}),
+                      })}`}
+                      className="hprop-link"
+                      onClick={(ev) => ev.stopPropagation()}
+                    >
+                      View details &amp; photos →
+                    </Link>
+                  )}
                 </div>
                 <div className="hprop-price">
                   <span className="hprop-total">
@@ -363,7 +399,7 @@ export default function HotelForm() {
                   </span>
                   <span className="tiny">total, {rooms} room{rooms > 1 ? "s" : ""}</span>
                 </div>
-              </button>
+              </div>
             ))}
             </>
             )}

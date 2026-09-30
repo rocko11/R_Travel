@@ -132,7 +132,11 @@ export default function CabinPanel({ offer, allowCompare = true, startOpen = fal
         <div className="cab-body">
           {offer.slices.map((s, i) => (
             <div key={i}>
-              {offer.slices.length > 1 && <div className="cab-dir">{i === 0 ? "Outbound" : "Return"}</div>}
+              {offer.slices.length > 1 && (
+                <div className="cab-dir">
+                  {offer.slices.length > 2 ? `Flight ${i + 1}` : i === 0 ? "Outbound" : "Return"}
+                </div>
+              )}
               <div className="cab-segs">{s.segments.map((g, j) => <SegmentCard key={j} g={g} />)}</div>
             </div>
           ))}

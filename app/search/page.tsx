@@ -79,11 +79,24 @@ function Results() {
     return { cheapest, fastest };
   }, [filtered]);
 
+  const extraLegsRaw = (sp.get("extraLegs") || "").split(",").filter(Boolean);
+  const extraLegsLabels = (sp.get("extraLegsLabels") || "").split(",");
   const initial = {
     from: sp.get("origin") ? { iata: sp.get("origin")!, label: sp.get("fromLabel") || sp.get("origin")! } : null,
     to: sp.get("destination") ? { iata: sp.get("destination")!, label: sp.get("toLabel") || sp.get("destination")! } : null,
     departDate: sp.get("departDate") ?? undefined,
     returnDate: sp.get("returnDate") ?? "",
+    extraLegs: extraLegsRaw.length
+      ? extraLegsRaw.map((chunk, i) => {
+          const [origin, destination, date] = chunk.split("|");
+          const [fromLabel, toLabel] = (extraLegsLabels[i] || "").split("~");
+          return {
+            from: origin ? { iata: origin, label: fromLabel || origin } : null,
+            to: destination ? { iata: destination, label: toLabel || destination } : null,
+            date: date || "",
+          };
+        })
+      : undefined,
     adults: Number(sp.get("adults") || 1),
     childAges: (sp.get("childAges") || "").split(",").filter(Boolean).map(Number),
     cabin: (sp.get("cabin") || "economy") as CabinClass,

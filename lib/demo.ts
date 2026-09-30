@@ -1,4 +1,5 @@
 import "server-only";
+import { searchLegs } from "./legs";
 import type { CabinClass, CabinInfo, Offer, Place, SearchParams, Segment, Slice } from "./types";
 
 /** Demo data: a small airport list with coordinates, used when no Duffel token is set. */
@@ -144,21 +145,34 @@ function buildSlice(
 }
 
 export function demoOffers(q: SearchParams): Offer[] {
-  const A = airport(q.origin), B = airport(q.destination);
-  if (!A || !B || q.origin === q.destination) return [];
-  const km = distanceKm(A, B);
+  const legs = searchLegs(q);
+  const legAirports = legs.map((l) => ({ leg: l, A: airport(l.origin), B: airport(l.destination) }));
+  if (legAirports.some(({ A, B, leg }) => !A || !B || leg.origin === leg.destination)) return [];
+  const km = legAirports.reduce((sum, { A, B }) => sum + distanceKm(A!, B!), 0);
   const cabinMult = { economy: 1, premium_economy: 1.7, business: 3.8, first: 6 }[q.cabin];
   const paxWeight = q.adults + q.childAges.reduce((s, a) => s + (a < 2 ? 0.1 : 0.75), 0);
   const offers: Offer[] = [];
   // Same seed for every cabin, so the same flights appear in each class.
-  const r = rng(`${q.origin}${q.destination}${q.departDate}${q.returnDate ?? ""}`);
+  const legSeed = legs.map((l) => `${l.origin}${l.destination}${l.departDate}`).join("");
+  const r = rng(legSeed);
   for (let i = 0; i < 14; i++) {
     const carrier = CARRIERS[Math.floor(r() * CARRIERS.length)];
-    const stops = km < 1500 ? (r() < 0.8 ? 0 : 1) : r() < 0.45 ? 0 : 1;
-    const out = buildSlice(q.origin, q.destination, q.departDate, r, carrier, stops);
-    const back = q.returnDate ? buildSlice(q.destination, q.origin, q.returnDate, r, carrier, stops) : null;
-    if (!out || (q.returnDate && !back)) continue;
-    const perPax = (60 + km * 0.07) * (0.8 + r() * 0.6) * (stops ? 0.85 : 1) * cabinMult * (back ? 1.8 : 1);
+    const slices: Slice[] = [];
+    let ok = true;
+    for (const { leg, A, B } of legAirports) {
+      const legKm = distanceKm(A!, B!);
+      const stops = legKm < 1500 ? (r() < 0.8 ? 0 : 1) : r() < 0.45 ? 0 : 1;
+      const s = buildSlice(leg.origin, leg.destination, leg.departDate, r, carrier, stops);
+      if (!s) {
+        ok = false;
+        break;
+      }
+      slices.push(s);
+    }
+    if (!ok) continue;
+    const anyStops = slices.some((s) => s.stops > 0);
+    const tripMult = slices.length > 1 ? 1 + 0.8 * (slices.length - 1) : 1;
+    const perPax = (60 + km * 0.07) * (0.8 + r() * 0.6) * (anyStops ? 0.85 : 1) * cabinMult * tripMult;
     const refundable = r() < 0.3;
     const bagRoll = r();
     offers.push({
@@ -166,7 +180,7 @@ export function demoOffers(q: SearchParams): Offer[] {
       baseAmount: Math.round(perPax * paxWeight * (refundable ? 1.25 : 1) * 100) / 100,
       currency: "USD",
       owner: { name: carrier.name, iata: carrier.iata },
-      slices: back ? [out, back] : [out],
+      slices,
       passengers: [
         ...Array.from({ length: q.adults }, (_, n) => ({ id: `pas_demo_a${n}`, type: "adult" as const })),
         ...q.childAges.map((age, n) => ({
@@ -179,7 +193,7 @@ export function demoOffers(q: SearchParams): Offer[] {
       checkedBags: bagRoll < 0.4 || cabinMult > 1 ? (q.cabin === "first" ? 2 : 1) : 0,
       carryOnBags: 1,
       cabinClass: q.cabin,
-      emissionsKg: Math.round(km * 0.09 * cabinMult ** 0.6 * (back ? 2 : 1)),
+      emissionsKg: Math.round(km * 0.09 * cabinMult ** 0.6 * tripMult),
       refundable,
       changeable: refundable || r() < 0.5,
     });

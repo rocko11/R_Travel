@@ -1,5 +1,6 @@
 import "server-only";
 import { config } from "./config";
+import { searchLegs } from "./legs";
 import type {
   CabinInfo,
   CabinClass,
@@ -154,12 +155,11 @@ export async function suggestPlaces(query: string): Promise<Place[]> {
 }
 
 export async function searchOffers(q: SearchParams): Promise<Offer[]> {
-  const slices = [
-    { origin: q.origin, destination: q.destination, departure_date: q.departDate },
-  ];
-  if (q.returnDate) {
-    slices.push({ origin: q.destination, destination: q.origin, departure_date: q.returnDate });
-  }
+  const slices = searchLegs(q).map((l) => ({
+    origin: l.origin,
+    destination: l.destination,
+    departure_date: l.departDate,
+  }));
   const passengers = [
     ...Array.from({ length: q.adults }, () => ({ type: "adult" })),
     ...q.childAges.map((age) => ({ age })),

@@ -10,11 +10,19 @@ export interface Place {
   lon?: number;
 }
 
+export interface SearchLeg {
+  origin: string;
+  destination: string;
+  departDate: string; // YYYY-MM-DD
+}
+
 export interface SearchParams {
   origin: string;
   destination: string;
   departDate: string; // YYYY-MM-DD
   returnDate?: string; // YYYY-MM-DD, round trip when set
+  /** Legs 2+ of a multi-city search (3–6 flights total, this plus the first leg). Mutually exclusive with returnDate. */
+  extraLegs?: SearchLeg[];
   adults: number;
   childAges: number[];
   cabin: CabinClass;

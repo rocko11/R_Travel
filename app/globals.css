@@ -110,6 +110,13 @@ button, input, select { font: inherit; color: inherit; }
   .search-grid .btn { grid-column: 1 / -1; }
 }
 
+.multi-legs { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
+.multi-leg-row { grid-template-columns: 1fr auto 1fr 1fr auto; }
+@media (max-width: 860px) {
+  .multi-leg-row { grid-template-columns: 1fr 1fr; }
+  .multi-leg-row span[aria-hidden] { display: none; }
+}
+
 /* Results */
 .results { display: grid; grid-template-columns: 240px 1fr; gap: 20px; padding: 20px 0 60px; }
 @media (max-width: 860px) { .results { grid-template-columns: 1fr; } }

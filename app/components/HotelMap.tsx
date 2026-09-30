@@ -54,6 +54,10 @@ export default function HotelMap({
   const elRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null); // eslint-disable-line @typescript-eslint/no-explicit-any
   const [error, setError] = useState("");
+  // Flips once the map instance actually exists, so the marker effect below — which runs
+  // synchronously on mount, before the async Leaflet load can finish — re-runs instead of
+  // silently finding mapRef.current still null and giving up for good.
+  const [mapReady, setMapReady] = useState(false);
 
   const pinned = hotels.filter((h) => h.hotel.lat != null && h.hotel.lng != null);
 
@@ -69,6 +73,7 @@ export default function HotelMap({
             maxZoom: 19,
           }).addTo(mapRef.current);
         }
+        if (!cancelled) setMapReady(true);
       })
       .catch(() => !cancelled && setError("Could not load the map."));
     return () => {
@@ -78,7 +83,7 @@ export default function HotelMap({
 
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !window.L) return;
+    if (!map || !mapReady || !window.L) return;
     const layer = window.L.layerGroup().addTo(map);
     const pts: [number, number][] = [];
     for (const h of pinned) {
@@ -96,7 +101,7 @@ export default function HotelMap({
     return () => {
       layer.remove();
     };
-  }, [pinned, selected, rooms, onSelect]);
+  }, [pinned, selected, rooms, onSelect, mapReady]);
 
   return (
     <div className="card" style={{ overflow: "hidden" }}>

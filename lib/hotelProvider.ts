@@ -63,31 +63,37 @@ async function liteApiEstimates(
   const destination = dest.slug ? destinationBySlug(dest.slug) : undefined;
   const countryCode = destination ? COUNTRY_ISO2[destination.country] : undefined;
   if (!countryCode) return null;
-  try {
-    const offers = await searchCityRates({
-      countryCode,
-      cityName: destination!.name,
-      checkin: checkIn,
-      checkout: checkOut,
-      adults: guests,
-      rooms,
-      marginPercent: 12,
-    });
-    if (!offers.length) return null;
-    return offers
-      .filter((o) => o.hotel?.name && o.cheapest.offerRetailRate > 0)
-      .sort((a, b) => a.cheapest.offerRetailRate - b.cheapest.offerRetailRate)
-      .slice(0, 8)
-      .map((o) => ({
-        hotel: { name: o.hotel!.name, area: o.hotel!.address || dest.city, tier: tierFromRating(o.hotel!.stars ?? o.hotel!.rating) },
-        low: Math.round(o.cheapest.offerRetailRate),
-        high: Math.round(o.cheapest.offerRetailRate),
-        live: true as const,
-        offerId: o.offerId,
-      }));
-  } catch {
-    return null;
+  const args = {
+    countryCode,
+    cityName: destination!.name,
+    checkin: checkIn,
+    checkout: checkOut,
+    adults: guests,
+    rooms,
+    marginPercent: 12,
+  };
+  // The sandbox occasionally times out or errors transiently under load; one retry keeps a
+  // single flaky call from silently dropping a guest back to stale synthetic estimates.
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const offers = await searchCityRates(args);
+      if (!offers.length) return null;
+      return offers
+        .filter((o) => o.hotel?.name && o.cheapest.offerRetailRate > 0)
+        .sort((a, b) => a.cheapest.offerRetailRate - b.cheapest.offerRetailRate)
+        .slice(0, 8)
+        .map((o) => ({
+          hotel: { name: o.hotel!.name, area: o.hotel!.address || dest.city, tier: tierFromRating(o.hotel!.stars ?? o.hotel!.rating) },
+          low: Math.round(o.cheapest.offerRetailRate),
+          high: Math.round(o.cheapest.offerRetailRate),
+          live: true as const,
+          offerId: o.offerId,
+        }));
+    } catch {
+      if (attempt === 1) return null;
+    }
   }
+  return null;
 }
 
 function tierFromRating(rating?: number): HotelTier {

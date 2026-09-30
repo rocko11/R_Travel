@@ -16,7 +16,18 @@ export const config = {
   baseUrl: (process.env.BASE_URL || "http://localhost:3000").replace(/\/$/, ""),
   markupFixed: num(process.env.MARKUP_FIXED, 12),
   markupPercent: num(process.env.MARKUP_PERCENT, 5),
+  amadeusClientId: process.env.AMADEUS_CLIENT_ID?.trim() || "",
+  amadeusClientSecret: process.env.AMADEUS_CLIENT_SECRET?.trim() || "",
+  /** "test" = sandbox data (default, free), "production" = real inventory, needs an approved app. */
+  amadeusEnv: (process.env.AMADEUS_ENV?.trim().toLowerCase() === "production" ? "production" : "test") as
+    | "test"
+    | "production",
 };
+
+/** True once Amadeus API credentials are configured; hotel search stays on synthetic estimates until then. */
+export function amadeusEnabled(): boolean {
+  return Boolean(config.amadeusClientId && config.amadeusClientSecret);
+}
 
 /** Real money requires real card collection. */
 export function paymentsRequired(): boolean {

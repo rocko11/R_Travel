@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import AirportInput, { type PlaceValue } from "./AirportInput";
 import { destinationBySlug } from "@/lib/destinations";
-import { ROOM_LABEL, estimateHotels, matchDestination, type RoomType } from "@/lib/hotels";
+import { ROOM_LABEL, matchDestination, type HotelEstimate, type RoomType } from "@/lib/hotels";
 import { money } from "@/lib/format";
 
 const iso = (d: Date) => d.toISOString().slice(0, 10);
@@ -53,7 +53,48 @@ export default function HotelForm() {
     [place, matched]
   );
   const nights = Math.max(1, Math.round((Date.parse(checkOut) - Date.parse(checkIn)) / 86_400_000));
-  const estimates = useMemo(() => estimateHotels(destInput, nights, roomType), [destInput, nights, roomType]);
+  const [estimates, setEstimates] = useState<HotelEstimate[]>([]);
+  const [liveRates, setLiveRates] = useState(false);
+  const [loadingRates, setLoadingRates] = useState(false);
+
+  useEffect(() => {
+    if (!destInput) {
+      setEstimates([]);
+      setLiveRates(false);
+      return;
+    }
+    const ctl = new AbortController();
+    setLoadingRates(true);
+    const t = setTimeout(() => {
+      const q = new URLSearchParams({
+        code: destInput.code,
+        city: destInput.city,
+        checkIn,
+        checkOut,
+        guests: String(guests),
+        rooms: String(rooms),
+        roomType,
+      });
+      fetch(`/api/hotels/search?${q}`, { signal: ctl.signal })
+        .then((r) => r.json())
+        .then((j) => {
+          setEstimates(j.hotels ?? []);
+          setLiveRates(j.source === "live");
+        })
+        .catch((e) => {
+          if (e.name !== "AbortError") {
+            setEstimates([]);
+            setLiveRates(false);
+          }
+        })
+        .finally(() => setLoadingRates(false));
+    }, 250);
+    return () => {
+      clearTimeout(t);
+      ctl.abort();
+    };
+  }, [destInput, checkIn, checkOut, guests, rooms, roomType]);
+
   useEffect(() => {
     if (hotelName !== "any" && !estimates.some((e) => e.hotel.name === hotelName)) setHotelName("any");
   }, [estimates, hotelName]);
@@ -149,8 +190,17 @@ export default function HotelForm() {
       <h2 className="jet-h">Choose a hotel</h2>
       {place ? (
         <p className="muted" style={{ marginTop: -4 }}>
-          {estimates.length} hotel{estimates.length !== 1 ? "s" : ""} in {destInput?.city}
-          {matched ? ", including our destination guide's picks" : ""}. Estimates are per room, for {nights} night{nights > 1 ? "s" : ""}, {rooms} room{rooms > 1 ? "s" : ""} total below.
+          {loadingRates ? (
+            "Checking rates…"
+          ) : (
+            <>
+              {estimates.length} hotel{estimates.length !== 1 ? "s" : ""} in {destInput?.city}
+              {matched && !liveRates ? ", including our destination guide's picks" : ""}.{" "}
+              {liveRates
+                ? `Live rates for ${nights} night${nights > 1 ? "s" : ""}, ${rooms} room${rooms > 1 ? "s" : ""} total below.`
+                : `Estimates are per room, for ${nights} night${nights > 1 ? "s" : ""}, ${rooms} room${rooms > 1 ? "s" : ""} total below.`}
+            </>
+          )}
         </p>
       ) : (
         <p className="muted" style={{ marginTop: -4 }}>Search a city or airport code above to see hotels to choose from.</p>
@@ -172,15 +222,20 @@ export default function HotelForm() {
             >
               <b>{e.hotel.name}</b>
               <span className="tiny">{e.hotel.tier} · {e.hotel.area}</span>
-              <span className="jet-price">{money(e.low * rooms, "USD").replace(".00", "")} – {money(e.high * rooms, "USD").replace(".00", "")}</span>
+              <span className="jet-price">
+                {e.low === e.high
+                  ? money(e.low * rooms, "USD").replace(".00", "")
+                  : `${money(e.low * rooms, "USD").replace(".00", "")} – ${money(e.high * rooms, "USD").replace(".00", "")}`}
+              </span>
               <span className="tiny">total for the stay, {rooms} room{rooms > 1 ? "s" : ""}</span>
             </button>
           ))}
         </div>
       )}
       <p className="tiny">
-        Estimates use 2026 market-average rates for the tier and room type. Taxes, resort fees and breakfast vary by hotel.
-        Your final rate comes in the quote.
+        {liveRates
+          ? "Live rates from our hotel partner. Taxes and resort fees may be added at booking. Your final confirmation comes in the quote."
+          : "Estimates use 2026 market-average rates for the tier and room type. Taxes, resort fees and breakfast vary by hotel. Your final rate comes in the quote."}
       </p>
 
       <div className="card section" style={{ marginTop: 16 }}>

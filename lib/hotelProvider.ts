@@ -88,7 +88,9 @@ async function liteApiEstimates(
       return offers
         .filter((o) => o.hotel?.name && o.cheapest.offerRetailRate > 0)
         .sort((a, b) => a.cheapest.offerRetailRate - b.cheapest.offerRetailRate)
-        .slice(0, 8)
+        // Show a real OTA-sized result set, not a token handful — still capped so one search
+        // doesn't render hundreds of cards at once.
+        .slice(0, 60)
         .map((o) => ({
           hotel: {
             name: o.hotel!.name,
@@ -96,6 +98,8 @@ async function liteApiEstimates(
             tier: tierFromRating(o.hotel!.stars ?? o.hotel!.rating),
             photo: o.hotel!.mainPhoto,
             stars: o.hotel!.stars,
+            lat: o.hotel!.lat,
+            lng: o.hotel!.lng,
           },
           low: Math.round(o.cheapest.offerRetailRate),
           high: Math.round(o.cheapest.offerRetailRate),
@@ -144,7 +148,7 @@ export async function liveHotelEstimates(
     return offers
       .filter((o) => o.name && o.total > 0)
       .sort((a, b) => a.total - b.total)
-      .slice(0, 8)
+      .slice(0, 60)
       .map((o) => {
         const perRoom = Math.round(o.total / Math.max(1, rooms));
         return {

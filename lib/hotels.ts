@@ -32,6 +32,9 @@ export interface HotelOption {
   photo?: string;
   /** Real star rating (1-5), present only for a live-priced hotel. */
   stars?: number;
+  /** Coordinates for the map view, present only for a live-priced hotel that has them. */
+  lat?: number;
+  lng?: number;
 }
 
 /** The curated guide's hotel list for a destination slug, or none if there's no guide match. */

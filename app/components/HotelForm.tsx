@@ -4,12 +4,13 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import AirportInput, { type PlaceValue } from "./AirportInput";
+import HotelMap from "./HotelMap";
 import { destinationBySlug } from "@/lib/destinations";
 import { ROOM_LABEL, matchDestination, type HotelEstimate, type HotelTier, type RoomType } from "@/lib/hotels";
 import { money } from "@/lib/format";
 
 type Sort = "price" | "rating";
-const TIERS: HotelTier[] = ["Luxury", "Mid-range", "Value"];
+type View = "list" | "map";
 
 const iso = (d: Date) => d.toISOString().slice(0, 10);
 
@@ -66,6 +67,7 @@ export default function HotelForm() {
   const [sort, setSort] = useState<Sort>("price");
   const [hiddenTiers, setHiddenTiers] = useState<Set<HotelTier>>(new Set());
   const [maxPrice, setMaxPrice] = useState<number | "">("");
+  const [view, setView] = useState<View>("list");
 
   useEffect(() => {
     if (!destInput) {
@@ -282,10 +284,24 @@ export default function HotelForm() {
           </aside>
 
           <div>
-            <p className="tiny" style={{ margin: "0 0 10px" }}>
-              {filteredSorted.length} of {estimates.length} propert{estimates.length === 1 ? "y" : "ies"}
-            </p>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: "0 0 10px", flexWrap: "wrap", gap: 8 }}>
+              <p className="tiny" style={{ margin: 0 }}>
+                {filteredSorted.length} of {estimates.length} propert{estimates.length === 1 ? "y" : "ies"}
+              </p>
+              <div className="seg" role="group" aria-label="View">
+                <button type="button" aria-pressed={view === "list"} onClick={() => setView("list")}>List</button>
+                <button type="button" aria-pressed={view === "map"} onClick={() => setView("map")}>Map</button>
+              </div>
+            </div>
 
+            {view === "map" && (
+              <div style={{ marginBottom: 12 }}>
+                <HotelMap hotels={filteredSorted} rooms={rooms} selected={hotelName} onSelect={setHotelName} />
+              </div>
+            )}
+
+            {view === "list" && (
+            <>
             <button
               type="button"
               role="radio"
@@ -349,6 +365,8 @@ export default function HotelForm() {
                 </div>
               </button>
             ))}
+            </>
+            )}
           </div>
         </div>
       )}

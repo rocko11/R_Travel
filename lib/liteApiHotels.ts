@@ -30,6 +30,8 @@ export interface LiteApiHotelInfo {
   cityName?: string;
   rating?: number;
   stars?: number;
+  lat?: number;
+  lng?: number;
 }
 
 export interface LiteApiRoomRate {
@@ -81,7 +83,10 @@ export async function searchCityRates(args: {
       occupancies,
       maxRatesPerHotel: 1,
       includeHotelData: true,
-      limit: 40,
+      // Ask liteAPI for its default page size (200, max allowed 5000) rather than an
+      // arbitrary 40 — a real OTA shows dozens to hundreds of properties per city, and 40
+      // was quietly capping every search well before our own display limit ever kicked in.
+      limit: 200,
       ...(args.marginPercent != null ? { margin: args.marginPercent } : {}),
     }),
     cache: "no-store",
@@ -104,6 +109,8 @@ export async function searchCityRates(args: {
       cityName: h.city_name,
       rating: h.rating != null ? Number(h.rating) : undefined,
       stars: h.stars != null ? Number(h.stars) : undefined,
+      lat: h.latitude != null ? Number(h.latitude) : undefined,
+      lng: h.longitude != null ? Number(h.longitude) : undefined,
     });
   }
   const out: LiteApiOffer[] = [];

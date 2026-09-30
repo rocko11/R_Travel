@@ -62,6 +62,8 @@ export default function HotelDetailPage({ params }: { params: Promise<{ id: stri
 
   const images = details?.images?.length ? details.images : photo ? [{ url: photo, caption: name }] : [];
   const mainImg = images[activeImg] ?? images[0];
+  const showPrev = () => setActiveImg((i) => (i - 1 + images.length) % images.length);
+  const showNext = () => setActiveImg((i) => (i + 1) % images.length);
   const lat = details?.lat ?? qLat;
   const lng = details?.lng ?? qLng;
   const displayStars = details?.starRating ?? stars;
@@ -89,26 +91,16 @@ export default function HotelDetailPage({ params }: { params: Promise<{ id: stri
       </p>
 
       {images.length > 0 && (
-        <div className="hdetail-gallery" style={{ marginBottom: 16 }}>
-          <div className="hdetail-gallery-main">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={mainImg.url} alt={mainImg.caption || name} />
-          </div>
-          <div className="hdetail-gallery-thumbs">
-            {images.slice(1, 3).map((img, i) => (
-              <button
-                key={img.url}
-                type="button"
-                className="hdetail-gallery-thumb"
-                style={{ border: 0, padding: 0, cursor: "pointer" }}
-                onClick={() => setActiveImg(i + 1)}
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={img.url} alt="" />
-                {i === 1 && images.length > 3 && <span className="hdetail-gallery-more">+{images.length - 3} photos</span>}
-              </button>
-            ))}
-          </div>
+        <div className="hdetail-carousel" style={{ marginBottom: 16 }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={mainImg.url} alt={mainImg.caption || name} />
+          {images.length > 1 && (
+            <>
+              <button type="button" className="hdetail-carousel-arrow prev" aria-label="Previous photo" onClick={showPrev}>‹</button>
+              <button type="button" className="hdetail-carousel-arrow next" aria-label="Next photo" onClick={showNext}>›</button>
+              <span className="hdetail-carousel-count">{activeImg + 1} / {images.length}</span>
+            </>
+          )}
         </div>
       )}
 

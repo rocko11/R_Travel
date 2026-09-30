@@ -358,13 +358,17 @@ button, input, select { font: inherit; color: inherit; }
 /* Hotel detail page */
 .hdetail-grid { display: grid; grid-template-columns: 1fr 340px; gap: 20px; align-items: start; }
 @media (max-width: 860px) { .hdetail-grid { grid-template-columns: 1fr; } }
-.hdetail-gallery { display: grid; grid-template-columns: 2fr 1fr; gap: 6px; border-radius: var(--radius); overflow: hidden; }
-.hdetail-gallery-main { position: relative; min-height: 320px; background: var(--bg); }
-.hdetail-gallery-main img, .hdetail-gallery-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.hdetail-gallery-thumbs { display: grid; grid-template-rows: repeat(2, 1fr); gap: 6px; }
-.hdetail-gallery-thumb { position: relative; min-height: 157px; background: var(--bg); overflow: hidden; }
-.hdetail-gallery-more { position: absolute; inset: 0; background: rgba(0,0,0,.45); color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 15px; }
-@media (max-width: 640px) { .hdetail-gallery { grid-template-columns: 1fr; } .hdetail-gallery-thumbs { display: none; } }
+.hdetail-carousel { position: relative; height: 440px; border-radius: var(--radius); overflow: hidden; background: var(--bg); }
+.hdetail-carousel img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.hdetail-carousel-arrow { position: absolute; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; border-radius: 999px; border: 0; background: rgba(0,0,0,.5); color: #fff; font-size: 18px; display: grid; place-items: center; cursor: pointer; }
+.hdetail-carousel-arrow:hover { background: rgba(0,0,0,.7); }
+.hdetail-carousel-arrow.prev { left: 12px; }
+.hdetail-carousel-arrow.next { right: 12px; }
+.hdetail-carousel-count { position: absolute; right: 12px; bottom: 12px; background: rgba(0,0,0,.55); color: #fff; font-size: 13px; padding: 4px 10px; border-radius: 999px; }
+.hdetail-carousel-dots { position: absolute; left: 0; right: 0; bottom: 12px; display: flex; justify-content: center; gap: 5px; }
+.hdetail-carousel-dots span { width: 6px; height: 6px; border-radius: 999px; background: rgba(255,255,255,.55); }
+.hdetail-carousel-dots span.active { background: #fff; }
+@media (max-width: 640px) { .hdetail-carousel { height: 260px; } }
 .hdetail-title { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; margin: 0 0 4px; }
 .hdetail-meta { color: var(--ink-2); font-size: 14px; margin-bottom: 4px; }
 .amenities-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px 16px; }

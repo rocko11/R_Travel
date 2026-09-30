@@ -9,6 +9,8 @@ import { CRUISE_SHIPS, SUITE_LABEL } from "@/lib/cruises";
 import { hotelRequestsForUser } from "@/lib/hotelRequests";
 import { ROOM_LABEL } from "@/lib/hotels";
 import { tourRequestsForUser } from "@/lib/tourRequests";
+import { carRequestsForUser } from "@/lib/carRequests";
+import { CLASS_LABEL } from "@/lib/cars";
 import { plansForUser } from "@/lib/savedPlans";
 import { conciergeForUser, CONCIERGE_SERVICES, CONCIERGE_STATUS_LABEL } from "@/lib/concierge";
 import { day, money, time } from "@/lib/format";
@@ -30,6 +32,7 @@ export default async function AccountPage() {
   const cruises = await cruiseRequestsForUser(user.id);
   const hotels = await hotelRequestsForUser(user.id);
   const tours = await tourRequestsForUser(user.id);
+  const cars = await carRequestsForUser(user.id);
   const cc = await conciergeForUser(user.id);
   const plans = await plansForUser(user.id);
   const today = new Date().toISOString().slice(0, 10);
@@ -72,7 +75,7 @@ export default async function AccountPage() {
         <span className="muted" style={{ fontSize: 14 }}>{user.name} · {user.email}</span>
       </div>
 
-      {bookings.length === 0 && jets.length === 0 && cruises.length === 0 && hotels.length === 0 && tours.length === 0 && cc.length === 0 && plans.length === 0 && (
+      {bookings.length === 0 && jets.length === 0 && cruises.length === 0 && hotels.length === 0 && tours.length === 0 && cars.length === 0 && cc.length === 0 && plans.length === 0 && (
         <div className="card state" style={{ marginTop: 20 }}>
           <p>No trips yet. Flights you book while signed in will show up here.</p>
           <Link href="/" className="btn small" style={{ display: "inline-flex", alignItems: "center", textDecoration: "none" }}>Search flights</Link>
@@ -145,6 +148,26 @@ export default async function AccountPage() {
                 <div className="trip-route">{r.destination}{r.hotelName ? ` — ${r.hotelName}` : ""}</div>
                 <div className="muted" style={{ fontSize: 14 }}>
                   {day(r.checkIn)} – {day(r.checkOut)} · {r.guests} guest{r.guests > 1 ? "s" : ""} · {r.rooms} room{r.rooms > 1 ? "s" : ""} · {ROOM_LABEL[r.roomType]}
+                </div>
+              </div>
+              <div style={{ textAlign: "right" }}>
+                <span className={`chip ${r.status === "booked" ? "good" : ""}`}>
+                  {{ new: "Quote requested", quoted: "Quote sent", booked: "Booked", closed: "Closed" }[r.status]}
+                </span>
+              </div>
+            </div>
+          ))}
+        </>
+      )}
+      {cars.length > 0 && (
+        <>
+          <h2 className="trip-h">Car rental requests</h2>
+          {cars.map((r) => (
+            <div key={r.id} className="card trip">
+              <div>
+                <div className="trip-route">{r.pickupLocation}{r.dropoffLocation ? ` → ${r.dropoffLocation}` : ""}</div>
+                <div className="muted" style={{ fontSize: 14 }}>
+                  {day(r.pickupDate)} – {day(r.dropoffDate)} · {CLASS_LABEL[r.carClass]}
                 </div>
               </div>
               <div style={{ textAlign: "right" }}>

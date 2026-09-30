@@ -9,13 +9,11 @@ export const metadata = {
 export default function HotelsPage() {
   return (
     <main className="wrap">
-      <section className="hero" style={{ paddingBottom: 60 }}>
-        <h1>Hotels,<br />anywhere you&apos;re going.</h1>
-        <p>Pick a destination and dates to see estimated rates, or tell us where and we&apos;ll source the best hotels for you.</p>
+      <div style={{ paddingTop: 20 }}>
         <Suspense>
           <HotelForm />
         </Suspense>
-      </section>
+      </div>
     </main>
   );
 }

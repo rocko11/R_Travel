@@ -14,6 +14,7 @@ export async function GET(req: NextRequest) {
     const sp = req.nextUrl.searchParams;
     const code = (sp.get("code") || "").trim();
     const city = (sp.get("city") || code).trim();
+    const country = (sp.get("country") || "").trim().toUpperCase() || undefined;
     const checkIn = sp.get("checkIn") || "";
     const checkOut = sp.get("checkOut") || "";
     const guests = Number(sp.get("guests") || 2);
@@ -29,7 +30,7 @@ export async function GET(req: NextRequest) {
     if (!ROOM_TYPES.includes(roomType)) throw new ValidationError("Unknown room type.");
 
     const matched = matchDestination(code);
-    const dest = { slug: matched?.slug, code, city };
+    const dest = { slug: matched?.slug, code, city, country };
     const result = await hotelEstimatesFor(dest, checkIn, checkOut, guests, rooms, roomType);
     return NextResponse.json({ ...result, slug: matched?.slug });
   } catch (e) {

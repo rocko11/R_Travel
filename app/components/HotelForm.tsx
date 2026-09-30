@@ -50,7 +50,10 @@ export default function HotelForm() {
 
   const matched = useMemo(() => (place ? matchDestination(place.iata) : undefined), [place]);
   const destInput = useMemo(
-    () => (place ? { slug: matched?.slug, code: place.iata, city: place.label.replace(/\s*\([^)]*\)\s*$/, "") } : undefined),
+    () =>
+      place
+        ? { slug: matched?.slug, code: place.iata, city: place.label.replace(/\s*\([^)]*\)\s*$/, ""), country: place.country }
+        : undefined,
     [place, matched]
   );
   const nights = Math.max(1, Math.round((Date.parse(checkOut) - Date.parse(checkIn)) / 86_400_000));
@@ -75,6 +78,7 @@ export default function HotelForm() {
         guests: String(guests),
         rooms: String(rooms),
         roomType,
+        ...(destInput.country ? { country: destInput.country } : {}),
       });
       fetch(`/api/hotels/search?${q}`, { signal: ctl.signal })
         .then((r) => r.json())

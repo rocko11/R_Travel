@@ -8,6 +8,8 @@ export interface PlaceValue {
   label: string;
   lat?: number;
   lon?: number;
+  /** 2-letter ISO country code from Duffel's place suggestions, when picked from the dropdown. */
+  country?: string;
 }
 
 export default function AirportInput({
@@ -59,7 +61,7 @@ export default function AirportInput({
   }, []);
 
   const pick = (p: Place) => {
-    const v = { iata: p.iata, label: `${p.city} (${p.iata})`, lat: p.lat, lon: p.lon };
+    const v = { iata: p.iata, label: `${p.city} (${p.iata})`, lat: p.lat, lon: p.lon, country: p.country };
     onChange(v);
     setText(v.label);
     setOpen(false);

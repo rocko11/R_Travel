@@ -53,19 +53,26 @@ const COUNTRY_ISO2: Record<string, string> = {
 
 /** Live rates from liteAPI (Nuitee Connect), or null when it's not configured/usable for this city. */
 async function liteApiEstimates(
-  dest: { slug?: string; code: string; city: string } | undefined,
+  dest: { slug?: string; code: string; city: string; country?: string } | undefined,
   checkIn: string,
   checkOut: string,
   guests: number,
   rooms: number
 ): Promise<LiveHotelEstimate[] | null> {
   if (!dest || !liteApiEnabled()) return null;
+  // Prefer the real ISO-3166 country code Duffel's place search already gave us for whatever
+  // the guest typed — that works for any city in the world, not just R Travel's own destination
+  // guide. Fall back to the guide's curated name->ISO2 map only for older links (e.g.
+  // /hotels?city=<slug> from a destination guide page) that never carry a country code.
   const destination = dest.slug ? destinationBySlug(dest.slug) : undefined;
-  const countryCode = destination ? COUNTRY_ISO2[destination.country] : undefined;
+  const countryCode =
+    (dest.country && /^[A-Z]{2}$/.test(dest.country) ? dest.country : undefined) ??
+    (destination ? COUNTRY_ISO2[destination.country] : undefined);
   if (!countryCode) return null;
+  const cityName = destination?.name ?? dest.city;
   const args = {
     countryCode,
-    cityName: destination!.name,
+    cityName,
     checkin: checkIn,
     checkout: checkOut,
     adults: guests,
@@ -148,7 +155,7 @@ export async function liveHotelEstimates(
 
 /** Live rates when available, otherwise R Travel's synthetic estimate — always returns something. */
 export async function hotelEstimatesFor(
-  dest: { slug?: string; code: string; city: string } | undefined,
+  dest: { slug?: string; code: string; city: string; country?: string } | undefined,
   checkIn: string,
   checkOut: string,
   guests: number,

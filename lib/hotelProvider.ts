@@ -90,7 +90,13 @@ async function liteApiEstimates(
         .sort((a, b) => a.cheapest.offerRetailRate - b.cheapest.offerRetailRate)
         .slice(0, 8)
         .map((o) => ({
-          hotel: { name: o.hotel!.name, area: o.hotel!.address || dest.city, tier: tierFromRating(o.hotel!.stars ?? o.hotel!.rating) },
+          hotel: {
+            name: o.hotel!.name,
+            area: o.hotel!.address || dest.city,
+            tier: tierFromRating(o.hotel!.stars ?? o.hotel!.rating),
+            photo: o.hotel!.mainPhoto,
+            stars: o.hotel!.stars,
+          },
           low: Math.round(o.cheapest.offerRetailRate),
           high: Math.round(o.cheapest.offerRetailRate),
           live: true as const,
@@ -142,7 +148,7 @@ export async function liveHotelEstimates(
       .map((o) => {
         const perRoom = Math.round(o.total / Math.max(1, rooms));
         return {
-          hotel: { name: o.name, area: o.area || dest.city, tier: tierFromRating(o.rating) },
+          hotel: { name: o.name, area: o.area || dest.city, tier: tierFromRating(o.rating), stars: o.rating },
           low: perRoom,
           high: perRoom,
           live: true as const,

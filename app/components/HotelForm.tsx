@@ -5,8 +5,11 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import AirportInput, { type PlaceValue } from "./AirportInput";
 import { destinationBySlug } from "@/lib/destinations";
-import { ROOM_LABEL, matchDestination, type HotelEstimate, type RoomType } from "@/lib/hotels";
+import { ROOM_LABEL, matchDestination, type HotelEstimate, type HotelTier, type RoomType } from "@/lib/hotels";
 import { money } from "@/lib/format";
+
+type Sort = "price" | "rating";
+const TIERS: HotelTier[] = ["Luxury", "Mid-range", "Value"];
 
 const iso = (d: Date) => d.toISOString().slice(0, 10);
 
@@ -60,6 +63,9 @@ export default function HotelForm() {
   const [estimates, setEstimates] = useState<HotelEstimate[]>([]);
   const [liveRates, setLiveRates] = useState(false);
   const [loadingRates, setLoadingRates] = useState(false);
+  const [sort, setSort] = useState<Sort>("price");
+  const [hiddenTiers, setHiddenTiers] = useState<Set<HotelTier>>(new Set());
+  const [maxPrice, setMaxPrice] = useState<number | "">("");
 
   useEffect(() => {
     if (!destInput) {
@@ -103,6 +109,19 @@ export default function HotelForm() {
   useEffect(() => {
     if (hotelName !== "any" && !estimates.some((e) => e.hotel.name === hotelName)) setHotelName("any");
   }, [estimates, hotelName]);
+  useEffect(() => {
+    setHiddenTiers(new Set());
+    setMaxPrice("");
+  }, [destInput?.code]);
+
+  const availableTiers = useMemo(() => [...new Set(estimates.map((e) => e.hotel.tier))], [estimates]);
+  const filteredSorted = useMemo(() => {
+    const list = estimates.filter((e) => !hiddenTiers.has(e.hotel.tier) && (maxPrice === "" || e.low * rooms <= maxPrice));
+    return [...list].sort((a, b) =>
+      sort === "rating" ? (b.hotel.stars ?? 0) - (a.hotel.stars ?? 0) : a.low - b.low
+    );
+  }, [estimates, hiddenTiers, maxPrice, sort, rooms]);
+
   const chosen = estimates.find((e) => e.hotel.name === hotelName);
   const cheapestBookable = estimates.find((e) => e.offerId);
   // An exact hotel pick books that rate; "Best available" books the cheapest bookable rate, when one exists.
@@ -226,30 +245,111 @@ export default function HotelForm() {
         <p className="muted" style={{ marginTop: -4 }}>Search a city or airport code above to see hotels to choose from.</p>
       )}
       {estimates.length > 0 && (
-        <div className="jet-cards" role="radiogroup" aria-label="Hotel">
-          <button type="button" role="radio" aria-checked={hotelName === "any"} className="card jet-card" onClick={() => setHotelName("any")}>
-            <b>Best available</b>
-            <span className="muted">We recommend the right hotel for your dates and budget.</span>
-          </button>
-          {estimates.map((e) => (
+        <div className="results" style={{ padding: "0 0 12px" }}>
+          <aside className="card filters" aria-label="Filters">
+            <h3>Sort by</h3>
+            <label className="check">
+              <input type="radio" name="hsort" checked={sort === "price"} onChange={() => setSort("price")} /> Price, low to high
+            </label>
+            <label className="check">
+              <input type="radio" name="hsort" checked={sort === "rating"} onChange={() => setSort("rating")} /> Star rating
+            </label>
+            <h3>Max price, total stay</h3>
+            <input
+              type="number"
+              min={0}
+              placeholder="Any"
+              value={maxPrice}
+              onChange={(e) => setMaxPrice(e.target.value ? Number(e.target.value) : "")}
+              style={{ width: "100%", border: "1px solid var(--line)", borderRadius: 8, padding: "7px 10px", background: "var(--surface)", color: "var(--ink)" }}
+            />
+            {availableTiers.length > 1 && <h3>Property type</h3>}
+            {availableTiers.map((t) => (
+              <label className="check" key={t}>
+                <input
+                  type="checkbox"
+                  checked={!hiddenTiers.has(t)}
+                  onChange={(e) => {
+                    const n = new Set(hiddenTiers);
+                    if (e.target.checked) n.delete(t);
+                    else n.add(t);
+                    setHiddenTiers(n);
+                  }}
+                />
+                {t}
+              </label>
+            ))}
+          </aside>
+
+          <div>
+            <p className="tiny" style={{ margin: "0 0 10px" }}>
+              {filteredSorted.length} of {estimates.length} propert{estimates.length === 1 ? "y" : "ies"}
+            </p>
+
             <button
               type="button"
               role="radio"
-              aria-checked={hotelName === e.hotel.name}
-              key={e.hotel.name}
-              className="card jet-card"
-              onClick={() => setHotelName(e.hotel.name)}
+              aria-checked={hotelName === "any"}
+              className="card hprop"
+              style={{ gridTemplateColumns: "1fr 180px" }}
+              onClick={() => setHotelName("any")}
             >
-              <b>{e.hotel.name}</b>
-              <span className="tiny">{e.hotel.tier} · {e.hotel.area}</span>
-              <span className="jet-price">
-                {e.low === e.high
-                  ? money(e.low * rooms, "USD").replace(".00", "")
-                  : `${money(e.low * rooms, "USD").replace(".00", "")} – ${money(e.high * rooms, "USD").replace(".00", "")}`}
-              </span>
-              <span className="tiny">total for the stay, {rooms} room{rooms > 1 ? "s" : ""}</span>
+              <div className="hprop-body">
+                <span className="chip good" style={{ alignSelf: "flex-start" }}>Recommended</span>
+                <span className="hprop-name">Best available</span>
+                <span className="hprop-area">We match you to the right hotel for your dates and budget.</span>
+              </div>
+              <div className="hprop-price">
+                {filteredSorted[0] && (
+                  <>
+                    <span className="hprop-total">from {money(filteredSorted[0].low * rooms, "USD").replace(".00", "")}</span>
+                    <span className="tiny">total, {rooms} room{rooms > 1 ? "s" : ""}</span>
+                  </>
+                )}
+              </div>
             </button>
-          ))}
+
+            {filteredSorted.map((e) => (
+              <button
+                type="button"
+                role="radio"
+                aria-checked={hotelName === e.hotel.name}
+                key={e.hotel.name}
+                className="card hprop"
+                onClick={() => setHotelName(e.hotel.name)}
+              >
+                <div className="hprop-photo">
+                  {e.hotel.photo ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={e.hotel.photo} alt={e.hotel.name} />
+                  ) : (
+                    <div className="hprop-photo-ph">{e.hotel.tier}</div>
+                  )}
+                </div>
+                <div className="hprop-body">
+                  <span className="hprop-name">{e.hotel.name}</span>
+                  <span className="hprop-area">{e.hotel.area}</span>
+                  {e.hotel.stars ? (
+                    <span className="hprop-stars" aria-label={`${e.hotel.stars} star`}>{"★".repeat(Math.max(1, Math.round(e.hotel.stars)))}</span>
+                  ) : (
+                    <span className="tiny">{e.hotel.tier}</span>
+                  )}
+                  <span className="chips">
+                    {e.live && <span className="chip good">Live rate</span>}
+                    {e.offerId && <span className="chip good">Bookable now</span>}
+                  </span>
+                </div>
+                <div className="hprop-price">
+                  <span className="hprop-total">
+                    {e.low === e.high
+                      ? money(e.low * rooms, "USD").replace(".00", "")
+                      : `${money(e.low * rooms, "USD").replace(".00", "")}–${money(e.high * rooms, "USD").replace(".00", "")}`}
+                  </span>
+                  <span className="tiny">total, {rooms} room{rooms > 1 ? "s" : ""}</span>
+                </div>
+              </button>
+            ))}
+          </div>
         </div>
       )}
       <p className="tiny">

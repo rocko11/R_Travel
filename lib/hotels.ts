@@ -28,6 +28,10 @@ export interface HotelOption {
   name: string;
   area: string;
   tier: HotelTier;
+  /** Real photo URL, present only for a live-priced hotel (liteAPI/Amadeus). */
+  photo?: string;
+  /** Real star rating (1-5), present only for a live-priced hotel. */
+  stars?: number;
 }
 
 /** The curated guide's hotel list for a destination slug, or none if there's no guide match. */

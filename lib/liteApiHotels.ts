@@ -229,6 +229,9 @@ export async function prebookOffer(offerId: string): Promise<PrebookResult> {
   const rate = roomType?.rates?.[0];
   const total = rate?.offerRetailRate?.[0]?.amount ?? data?.offerRetailRate?.[0]?.amount;
   const currency = rate?.offerRetailRate?.[0]?.currency ?? data?.offerRetailRate?.[0]?.currency ?? "USD";
+  // With a sandbox key ("sand_..."), /hotels/rates returns realistic-looking mock offers,
+  // but /rates/prebook has no real inventory behind them and routinely comes back 200 OK
+  // with no prebookId/total — not a client bug, and not fixable without a production key.
   if (!data?.prebookId || !total) throw new LiteApiError("This rate is no longer available. Please search again.", 410);
   return {
     prebookId: String(data.prebookId),

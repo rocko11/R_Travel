@@ -173,16 +173,23 @@ export default function HotelForm() {
   // An exact hotel pick books that rate; "Best available" books the cheapest bookable rate, when one exists.
   const bookable = chosen?.offerId ? chosen : hotelName === "any" ? cheapestBookable : undefined;
 
-  const goToBooking = () => {
-    if (!place || !bookable?.offerId) return;
+  // Shared by the bottom "Continue to book" button and each list card's own "Book now" —
+  // so a guest can book straight from the list without opening the property page first.
+  const goToBookingFor = (est: HotelEstimate) => {
+    if (!place || !est.offerId) return;
     const q = new URLSearchParams({
-      hotel: bookable.hotel.name,
+      hotel: est.hotel.name,
       dest: place.label,
       in: checkIn,
       out: checkOut,
       guests: String(guests),
     });
-    router.push(`/hotels/book/${encodeURIComponent(bookable.offerId)}?${q}`);
+    router.push(`/hotels/book/${encodeURIComponent(est.offerId)}?${q}`);
+  };
+
+  const goToBooking = () => {
+    if (!bookable) return;
+    goToBookingFor(bookable);
   };
 
   const submit = async (e: React.FormEvent) => {
@@ -369,80 +376,104 @@ export default function HotelForm() {
               </div>
             </button>
 
-            {filteredSorted.map((e) => (
-              <div
-                role="radio"
-                tabIndex={0}
-                aria-checked={hotelName === e.hotel.name}
-                key={e.hotel.name}
-                className="card hprop"
-                onClick={() => setHotelName(e.hotel.name)}
-                onKeyDown={(ev) => {
-                  if (ev.key === "Enter" || ev.key === " ") {
-                    ev.preventDefault();
-                    setHotelName(e.hotel.name);
-                  }
-                }}
-              >
-                <div className="hprop-photo">
-                  {e.hotel.photo ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={e.hotel.photo} alt={e.hotel.name} />
-                  ) : (
-                    <div className="hprop-photo-ph">{e.hotel.tier}</div>
-                  )}
+            {filteredSorted.map((e) => {
+              const detailHref = e.hotel.id
+                ? `/hotels/${encodeURIComponent(e.hotel.id)}?${new URLSearchParams({
+                    name: e.hotel.name,
+                    area: e.hotel.area,
+                    dest: place?.label ?? "",
+                    // Carried through so "Back to search"/"Request a quote" on the detail
+                    // page can rebuild this exact search instead of landing on an empty form.
+                    ...(place ? { code: place.iata, label: place.label } : {}),
+                    ...(place?.country ? { country: place.country } : {}),
+                    in: checkIn,
+                    out: checkOut,
+                    guests: String(guests),
+                    rooms: String(rooms),
+                    low: String(e.low),
+                    high: String(e.high),
+                    ...(e.hotel.stars ? { stars: String(e.hotel.stars) } : {}),
+                    ...(e.hotel.photo ? { photo: e.hotel.photo } : {}),
+                    ...(e.hotel.lat != null ? { lat: String(e.hotel.lat) } : {}),
+                    ...(e.hotel.lng != null ? { lng: String(e.hotel.lng) } : {}),
+                    ...(e.offerId ? { offerId: e.offerId } : {}),
+                  })}`
+                : null;
+
+              const cardBody = (
+                <>
+                  <div className="hprop-photo">
+                    {e.hotel.photo ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={e.hotel.photo} alt={e.hotel.name} />
+                    ) : (
+                      <div className="hprop-photo-ph">{e.hotel.tier}</div>
+                    )}
+                  </div>
+                  <div className="hprop-body">
+                    <span className="hprop-name">{e.hotel.name}</span>
+                    <span className="hprop-area">{e.hotel.area}</span>
+                    {e.hotel.stars ? (
+                      <span className="hprop-stars" aria-label={`${e.hotel.stars} star`}>{"★".repeat(Math.max(1, Math.round(e.hotel.stars)))}</span>
+                    ) : (
+                      <span className="tiny">{e.hotel.tier}</span>
+                    )}
+                    <span className="chips">
+                      {e.live && <span className="chip good">Live rate</span>}
+                      {e.offerId && <span className="chip good">Bookable now</span>}
+                    </span>
+                    {detailHref && <span className="hprop-link">View details &amp; photos →</span>}
+                  </div>
+                  <div className="hprop-price">
+                    <span className="hprop-total">
+                      {e.low === e.high
+                        ? money(e.low * rooms, "USD").replace(".00", "")
+                        : `${money(e.low * rooms, "USD").replace(".00", "")}–${money(e.high * rooms, "USD").replace(".00", "")}`}
+                    </span>
+                    <span className="tiny">total, {rooms} room{rooms > 1 ? "s" : ""}</span>
+                    {e.offerId && (
+                      <button
+                        type="button"
+                        className="btn small"
+                        style={{ marginTop: 6 }}
+                        onClick={(ev) => {
+                          // Book straight from the list — no need to open the property page first.
+                          ev.stopPropagation();
+                          goToBookingFor(e);
+                        }}
+                      >
+                        Book now
+                      </button>
+                    )}
+                  </div>
+                </>
+              );
+
+              // A hotel with a detail page (a real liteAPI result) has its whole card —
+              // photo included — clickable straight to that page, the way every other OTA's
+              // results list works; the "Book now" button (above) stops that click from
+              // firing so it can book the rate directly instead. A hotel with no id (a
+              // synthetic/Amadeus estimate) has no detail page, so its card just selects it
+              // for the quote flow instead.
+              return (
+                <div
+                  role={detailHref ? "link" : "radio"}
+                  tabIndex={0}
+                  aria-checked={detailHref ? undefined : hotelName === e.hotel.name}
+                  key={e.hotel.name}
+                  className="card hprop"
+                  onClick={() => (detailHref ? router.push(detailHref) : setHotelName(e.hotel.name))}
+                  onKeyDown={(ev) => {
+                    if (ev.key === "Enter" || ev.key === " ") {
+                      ev.preventDefault();
+                      detailHref ? router.push(detailHref) : setHotelName(e.hotel.name);
+                    }
+                  }}
+                >
+                  {cardBody}
                 </div>
-                <div className="hprop-body">
-                  <span className="hprop-name">{e.hotel.name}</span>
-                  <span className="hprop-area">{e.hotel.area}</span>
-                  {e.hotel.stars ? (
-                    <span className="hprop-stars" aria-label={`${e.hotel.stars} star`}>{"★".repeat(Math.max(1, Math.round(e.hotel.stars)))}</span>
-                  ) : (
-                    <span className="tiny">{e.hotel.tier}</span>
-                  )}
-                  <span className="chips">
-                    {e.live && <span className="chip good">Live rate</span>}
-                    {e.offerId && <span className="chip good">Bookable now</span>}
-                  </span>
-                  {e.hotel.id && (
-                    <Link
-                      href={`/hotels/${encodeURIComponent(e.hotel.id)}?${new URLSearchParams({
-                        name: e.hotel.name,
-                        area: e.hotel.area,
-                        dest: place?.label ?? "",
-                        // Carried through so "Back to search"/"Request a quote" on the detail
-                        // page can rebuild this exact search instead of landing on an empty form.
-                        ...(place ? { code: place.iata, label: place.label } : {}),
-                        ...(place?.country ? { country: place.country } : {}),
-                        in: checkIn,
-                        out: checkOut,
-                        guests: String(guests),
-                        rooms: String(rooms),
-                        low: String(e.low),
-                        high: String(e.high),
-                        ...(e.hotel.stars ? { stars: String(e.hotel.stars) } : {}),
-                        ...(e.hotel.photo ? { photo: e.hotel.photo } : {}),
-                        ...(e.hotel.lat != null ? { lat: String(e.hotel.lat) } : {}),
-                        ...(e.hotel.lng != null ? { lng: String(e.hotel.lng) } : {}),
-                        ...(e.offerId ? { offerId: e.offerId } : {}),
-                      })}`}
-                      className="hprop-link"
-                      onClick={(ev) => ev.stopPropagation()}
-                    >
-                      View details &amp; photos →
-                    </Link>
-                  )}
-                </div>
-                <div className="hprop-price">
-                  <span className="hprop-total">
-                    {e.low === e.high
-                      ? money(e.low * rooms, "USD").replace(".00", "")
-                      : `${money(e.low * rooms, "USD").replace(".00", "")}–${money(e.high * rooms, "USD").replace(".00", "")}`}
-                  </span>
-                  <span className="tiny">total, {rooms} room{rooms > 1 ? "s" : ""}</span>
-                </div>
-              </div>
-            ))}
+              );
+            })}
             </>
             )}
           </div>

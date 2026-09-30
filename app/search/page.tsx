@@ -193,36 +193,42 @@ function Results() {
             </div>
           )}
 
-          {filtered.map((o) => (
-            <article className="card offer" key={o.id}>
-              <div className="offer-legs">
-                {o.slices.map((s, i) => (
-                  <SliceRow key={i} slice={s} iata={o.owner.iata} logo={o.owner.logo} showDate={o.slices.length > 1} />
-                ))}
-                <div className="chips">
-                  <span className="chip">{o.owner.name}</span>
-                  {o.checkedBags > 0 && <span className="chip good">Checked bag included</span>}
-                  {o.refundable && <span className="chip good">Refundable</span>}
-                  {!o.refundable && o.changeable && <span className="chip">Changeable</span>}
-                </div>
-                <CabinPanel offer={o} />
-              </div>
-              <div className="offer-price">
-                <div>
-                  <div className="price">{money(o.total, o.currency)}</div>
-                  <div className="tiny">
-                    total for {o.passengers.length} traveler{o.passengers.length > 1 ? "s" : ""}, all taxes and fees
+          {filtered.map((o) => {
+            const comparisonOnly = o.id.startsWith("lite_");
+            return (
+              <article className="card offer" key={o.id}>
+                <div className="offer-legs">
+                  {o.slices.map((s, i) => (
+                    <SliceRow key={i} slice={s} iata={o.owner.iata} logo={o.owner.logo} showDate={o.slices.length > 1} />
+                  ))}
+                  <div className="chips">
+                    <span className="chip">{o.owner.name}</span>
+                    {o.checkedBags > 0 && <span className="chip good">Checked bag included</span>}
+                    {o.refundable && <span className="chip good">Refundable</span>}
+                    {!o.refundable && o.changeable && <span className="chip">Changeable</span>}
+                    {comparisonOnly && <span className="chip" title="Shown for price comparison; book the closest Select-able fare instead.">Price preview only</span>}
                   </div>
+                  <CabinPanel offer={o} />
                 </div>
-                <button
-                  className="btn small"
-                  onClick={() => router.push(`/book/${encodeURIComponent(o.id)}?t=${o.total}`)}
-                >
-                  Select
-                </button>
-              </div>
-            </article>
-          ))}
+                <div className="offer-price">
+                  <div>
+                    <div className="price">{money(o.total, o.currency)}</div>
+                    <div className="tiny">
+                      total for {o.passengers.length} traveler{o.passengers.length > 1 ? "s" : ""}, all taxes and fees
+                    </div>
+                  </div>
+                  <button
+                    className="btn small"
+                    disabled={comparisonOnly}
+                    title={comparisonOnly ? "This fare is shown for comparison and can't be booked yet." : undefined}
+                    onClick={() => router.push(`/book/${encodeURIComponent(o.id)}?t=${o.total}`)}
+                  >
+                    {comparisonOnly ? "Not bookable yet" : "Select"}
+                  </button>
+                </div>
+              </article>
+            );
+          })}
         </section>
       </div>
     </main>

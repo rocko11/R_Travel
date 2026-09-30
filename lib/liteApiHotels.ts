@@ -44,6 +44,8 @@ export interface LiteApiOffer {
   hotelId: string;
   hotel?: LiteApiHotelInfo;
   cheapest: LiteApiRoomRate;
+  /** Pass this straight to prebookOffer() to book this exact rate. Absent if this rate isn't bookable online. */
+  offerId?: string;
 }
 
 /** Hotel rates search by city/country — one call returns hotel data + live priced offers. */
@@ -118,7 +120,96 @@ export async function searchCityRates(args: {
         boardName: rate.boardName,
         refundable: rate.cancellationPolicies ? undefined : undefined,
       },
+      offerId: roomType?.offerId ? String(roomType.offerId) : undefined,
     });
   }
   return out;
+}
+
+export interface PrebookResult {
+  prebookId: string;
+  hotelId: string;
+  total: number;
+  currency: string;
+  cancellationPolicies?: unknown;
+  roomName?: string;
+  boardName?: string;
+}
+
+/** Re-prices and locks a rate ahead of booking. Call right before showing the guest the checkout page. */
+export async function prebookOffer(offerId: string): Promise<PrebookResult> {
+  const res = await fetch(`${HOST}/rates/prebook`, {
+    method: "POST",
+    headers: { "X-API-Key": config.liteApiKey, "Content-Type": "application/json", Accept: "application/json" },
+    body: JSON.stringify({ offerId, usePaymentSdk: false }),
+    cache: "no-store",
+  });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new LiteApiError(body?.error?.message || body?.message || `liteAPI prebook failed (${res.status})`, res.status);
+  }
+  const data = body?.data ?? body;
+  const roomType = data?.roomTypes?.[0];
+  const rate = roomType?.rates?.[0];
+  const total = rate?.offerRetailRate?.[0]?.amount ?? data?.offerRetailRate?.[0]?.amount;
+  const currency = rate?.offerRetailRate?.[0]?.currency ?? data?.offerRetailRate?.[0]?.currency ?? "USD";
+  if (!data?.prebookId || !total) throw new LiteApiError("This rate is no longer available. Please search again.", 410);
+  return {
+    prebookId: String(data.prebookId),
+    hotelId: String(data.hotelId ?? ""),
+    total: Number(total),
+    currency,
+    cancellationPolicies: rate?.cancellationPolicies,
+    roomName: rate?.name ?? roomType?.name,
+    boardName: rate?.boardName,
+  };
+}
+
+export interface BookGuest {
+  firstName: string;
+  lastName: string;
+  email?: string;
+}
+
+export interface BookResult {
+  bookingId: string;
+  confirmationCode?: string;
+  status?: string;
+}
+
+/**
+ * Confirms a prebooked rate. Settles against R Travel's Nuitee Connect account (the
+ * "Account Credit Card" on file in the dashboard) rather than the guest's card — the guest
+ * already paid R Travel directly via Stripe before this call is made.
+ */
+export async function bookPrebook(args: {
+  prebookId: string;
+  holder: BookGuest;
+  guests: BookGuest[];
+  clientReference: string;
+}): Promise<BookResult> {
+  const res = await fetch(`${HOST}/rates/book`, {
+    method: "POST",
+    headers: { "X-API-Key": config.liteApiKey, "Content-Type": "application/json", Accept: "application/json" },
+    body: JSON.stringify({
+      prebookId: args.prebookId,
+      holder: { firstName: args.holder.firstName, lastName: args.holder.lastName, email: args.holder.email },
+      guests: args.guests.map((g) => ({ firstName: g.firstName, lastName: g.lastName, email: g.email })),
+      payment: { method: "ACC_CREDIT_CARD" },
+      clientReference: args.clientReference,
+    }),
+    cache: "no-store",
+  });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new LiteApiError(body?.error?.message || body?.message || `liteAPI booking failed (${res.status})`, res.status);
+  }
+  const data = body?.data ?? body;
+  const bookingId = data?.bookingId ?? data?.id;
+  if (!bookingId) throw new LiteApiError("Booking confirmation was unclear. Our team will verify and follow up.", 502);
+  return {
+    bookingId: String(bookingId),
+    confirmationCode: data?.hotelConfirmationCode ?? data?.supplierConfirmationCode,
+    status: data?.status,
+  };
 }

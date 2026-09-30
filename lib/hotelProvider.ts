@@ -83,6 +83,7 @@ async function liteApiEstimates(
         low: Math.round(o.cheapest.offerRetailRate),
         high: Math.round(o.cheapest.offerRetailRate),
         live: true as const,
+        offerId: o.offerId,
       }));
   } catch {
     return null;
@@ -97,6 +98,8 @@ function tierFromRating(rating?: number): HotelTier {
 
 export interface LiveHotelEstimate extends HotelEstimate {
   live: true;
+  /** Present only for a real liteAPI rate that can be booked online right now via /hotels/book. */
+  offerId?: string;
 }
 
 /** Live rates for a destination's stay, or null when live search isn't available/usable here. */

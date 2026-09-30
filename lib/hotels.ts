@@ -116,6 +116,10 @@ export interface HotelEstimate {
   hotel: HotelOption;
   low: number;
   high: number;
+  /** True when this is a real live-priced rate (liteAPI or Amadeus), not a synthetic estimate. */
+  live?: boolean;
+  /** Present only when this exact rate can be booked online right now (liteAPI only). */
+  offerId?: string;
 }
 
 /** One price estimate per available hotel: per room, for the whole stay. */

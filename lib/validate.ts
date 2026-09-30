@@ -88,3 +88,14 @@ export function parseContact(raw: Record<string, unknown>): ContactInput {
   if (!PHONE.test(phone)) throw new ValidationError("Enter the phone with country code, e.g. +1 917 555 0100.");
   return { email, phone };
 }
+
+export function parseHotelGuests(list: unknown): { firstName: string; lastName: string }[] {
+  if (!Array.isArray(list) || list.length < 1) throw new ValidationError("Enter the guest's name.");
+  return list.map((raw: Record<string, unknown>, i) => {
+    const firstName = String(raw?.firstName ?? "").trim();
+    const lastName = String(raw?.lastName ?? "").trim();
+    const n = `Guest ${i + 1}`;
+    if (!NAME.test(firstName) || !NAME.test(lastName)) throw new ValidationError(`${n}: use the name exactly as on the ID, Latin letters only.`);
+    return { firstName, lastName };
+  });
+}

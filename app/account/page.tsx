@@ -11,6 +11,7 @@ import { ROOM_LABEL } from "@/lib/hotels";
 import { tourRequestsForUser } from "@/lib/tourRequests";
 import { carRequestsForUser } from "@/lib/carRequests";
 import { CLASS_LABEL } from "@/lib/cars";
+import { hotelBookingsForUser } from "@/lib/hotelBooking";
 import { plansForUser } from "@/lib/savedPlans";
 import { conciergeForUser, CONCIERGE_SERVICES, CONCIERGE_STATUS_LABEL } from "@/lib/concierge";
 import { day, money, time } from "@/lib/format";
@@ -33,6 +34,7 @@ export default async function AccountPage() {
   const hotels = await hotelRequestsForUser(user.id);
   const tours = await tourRequestsForUser(user.id);
   const cars = await carRequestsForUser(user.id);
+  const hotelBookings = await hotelBookingsForUser(user.id);
   const cc = await conciergeForUser(user.id);
   const plans = await plansForUser(user.id);
   const today = new Date().toISOString().slice(0, 10);
@@ -75,7 +77,7 @@ export default async function AccountPage() {
         <span className="muted" style={{ fontSize: 14 }}>{user.name} · {user.email}</span>
       </div>
 
-      {bookings.length === 0 && jets.length === 0 && cruises.length === 0 && hotels.length === 0 && tours.length === 0 && cars.length === 0 && cc.length === 0 && plans.length === 0 && (
+      {bookings.length === 0 && jets.length === 0 && cruises.length === 0 && hotels.length === 0 && hotelBookings.length === 0 && tours.length === 0 && cars.length === 0 && cc.length === 0 && plans.length === 0 && (
         <div className="card state" style={{ marginTop: 20 }}>
           <p>No trips yet. Flights you book while signed in will show up here.</p>
           <Link href="/" className="btn small" style={{ display: "inline-flex", alignItems: "center", textDecoration: "none" }}>Search flights</Link>
@@ -136,6 +138,25 @@ export default async function AccountPage() {
                 </span>
               </div>
             </div>
+          ))}
+        </>
+      )}
+      {hotelBookings.length > 0 && (
+        <>
+          <h2 className="trip-h">Hotel bookings</h2>
+          {hotelBookings.map((b) => (
+            <Link key={b.id} href={`/hotels/booking/${b.id}`} className="card trip">
+              <div>
+                <div className="trip-route">{b.hotelName} — {b.destination}</div>
+                <div className="muted" style={{ fontSize: 14 }}>
+                  {day(b.checkIn)} – {day(b.checkOut)}{b.roomName ? ` · ${b.roomName}` : ""}
+                </div>
+              </div>
+              <div style={{ textAlign: "right" }}>
+                <span className={`chip ${STATUS[b.status].cls}`}>{STATUS[b.status].label}</span>
+                <div style={{ fontWeight: 700, marginTop: 6 }}>{money(b.total, b.currency)}</div>
+              </div>
+            </Link>
           ))}
         </>
       )}

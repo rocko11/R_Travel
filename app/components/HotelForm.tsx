@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import AirportInput, { type PlaceValue } from "./AirportInput";
 import { destinationBySlug } from "@/lib/destinations";
 import { ROOM_LABEL, matchDestination, type HotelEstimate, type RoomType } from "@/lib/hotels";
@@ -12,6 +12,7 @@ const iso = (d: Date) => d.toISOString().slice(0, 10);
 
 export default function HotelForm() {
   const sp = useSearchParams();
+  const router = useRouter();
   const preset = destinationBySlug(sp.get("city") ?? "");
   const today = iso(new Date());
 
@@ -99,6 +100,21 @@ export default function HotelForm() {
     if (hotelName !== "any" && !estimates.some((e) => e.hotel.name === hotelName)) setHotelName("any");
   }, [estimates, hotelName]);
   const chosen = estimates.find((e) => e.hotel.name === hotelName);
+  const cheapestBookable = estimates.find((e) => e.offerId);
+  // An exact hotel pick books that rate; "Best available" books the cheapest bookable rate, when one exists.
+  const bookable = chosen?.offerId ? chosen : hotelName === "any" ? cheapestBookable : undefined;
+
+  const goToBooking = () => {
+    if (!place || !bookable?.offerId) return;
+    const q = new URLSearchParams({
+      hotel: bookable.hotel.name,
+      dest: place.label,
+      in: checkIn,
+      out: checkOut,
+      guests: String(guests),
+    });
+    router.push(`/hotels/book/${encodeURIComponent(bookable.offerId)}?${q}`);
+  };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -234,31 +250,43 @@ export default function HotelForm() {
       )}
       <p className="tiny">
         {liveRates
-          ? "Live rates from our hotel partner. Taxes and resort fees may be added at booking. Your final confirmation comes in the quote."
+          ? bookable
+            ? "Live, bookable rates. Pay securely and get an instant confirmation — no waiting for a quote."
+            : "Live rates from our hotel partner. This one needs a quote; tell us your details below."
           : "Estimates use 2026 market-average rates for the tier and room type. Taxes, resort fees and breakfast vary by hotel. Your final rate comes in the quote."}
       </p>
 
-      <div className="card section" style={{ marginTop: 16 }}>
-        <h2>Your details</h2>
-        <p>We&apos;ll send available rooms and exact rates, usually within a few hours.</p>
-        <div className="form-grid two">
-          <label className="input">Full name<input required autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} /></label>
-          <label className="input">Email<input required type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} /></label>
-          <label className="input">Phone, with country code<input required type="tel" autoComplete="tel" placeholder="+1 917 555 0100" value={phone} onChange={(e) => setPhone(e.target.value)} /></label>
-          <label className="input">Anything else? (optional)
-            <input placeholder="High floor, late checkout, accessible room…" value={notes} onChange={(e) => setNotes(e.target.value)} />
-          </label>
+      {bookable ? (
+        <div className="card section" style={{ marginTop: 16 }}>
+          <h2>Ready to book</h2>
+          <p>{bookable.hotel.name} — {money(bookable.low, "USD").replace(".00", "")} total for the stay. Enter guest details and pay on the next step.</p>
+          <button type="button" className="btn" style={{ marginTop: 8 }} onClick={goToBooking}>
+            Continue to book
+          </button>
         </div>
-        {error && <div className="alert bad" style={{ marginTop: 14 }}>{error}</div>}
-        <button className="btn" style={{ marginTop: 16 }} disabled={busy}>
-          {busy ? "Sending…" : "Request a quote"}
-        </button>
-        {!signedIn && (
-          <p className="tiny" style={{ marginTop: 10 }}>
-            <Link href="/account/login?next=/hotels" style={{ color: "var(--brand)" }}>Sign in</Link> first to track this request under My trips.
-          </p>
-        )}
-      </div>
+      ) : (
+        <div className="card section" style={{ marginTop: 16 }}>
+          <h2>Your details</h2>
+          <p>We&apos;ll send available rooms and exact rates, usually within a few hours.</p>
+          <div className="form-grid two">
+            <label className="input">Full name<input required autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} /></label>
+            <label className="input">Email<input required type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} /></label>
+            <label className="input">Phone, with country code<input required type="tel" autoComplete="tel" placeholder="+1 917 555 0100" value={phone} onChange={(e) => setPhone(e.target.value)} /></label>
+            <label className="input">Anything else? (optional)
+              <input placeholder="High floor, late checkout, accessible room…" value={notes} onChange={(e) => setNotes(e.target.value)} />
+            </label>
+          </div>
+          {error && <div className="alert bad" style={{ marginTop: 14 }}>{error}</div>}
+          <button className="btn" style={{ marginTop: 16 }} disabled={busy}>
+            {busy ? "Sending…" : "Request a quote"}
+          </button>
+          {!signedIn && (
+            <p className="tiny" style={{ marginTop: 10 }}>
+              <Link href="/account/login?next=/hotels" style={{ color: "var(--brand)" }}>Sign in</Link> first to track this request under My trips.
+            </p>
+          )}
+        </div>
+      )}
     </form>
   );
 }

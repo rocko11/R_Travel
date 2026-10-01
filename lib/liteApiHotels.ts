@@ -227,20 +227,15 @@ export async function prebookOffer(offerId: string): Promise<PrebookResult> {
   const data = body?.data ?? body;
   const roomType = data?.roomTypes?.[0];
   const rate = roomType?.rates?.[0];
-  const total = rate?.offerRetailRate?.[0]?.amount ?? data?.offerRetailRate?.[0]?.amount;
-  const currency = rate?.offerRetailRate?.[0]?.currency ?? data?.offerRetailRate?.[0]?.currency ?? "USD";
-  // With a sandbox key ("sand_..."), /hotels/rates returns realistic-looking mock offers,
-  // but /rates/prebook has no real inventory behind them and routinely comes back 200 OK
-  // with no prebookId/total — not a client bug, and not fixable without a production key.
+  // /rates/prebook's own response shape differs from /hotels/rates: there is no
+  // roomType.offerRetailRate here — the price lives at rate.retailRate.total[0].amount
+  // (confirmed live: a valid prebook with a real prebookId was being thrown away because
+  // this was reading the search-response field name instead of the prebook one).
+  const total = rate?.retailRate?.total?.[0]?.amount ?? rate?.offerRetailRate?.[0]?.amount ?? data?.offerRetailRate?.[0]?.amount;
+  const currency =
+    rate?.retailRate?.total?.[0]?.currency ?? rate?.offerRetailRate?.[0]?.currency ?? data?.offerRetailRate?.[0]?.currency ?? "USD";
   if (!data?.prebookId || !total) {
-    // TEMP DIAGNOSTIC — surfaces liteAPI's raw prebook response shape for live debugging.
-    // Remove before leaving this in production long-term.
-    const rateKeys = Object.keys(rate ?? {});
-    const roomTypeKeys = Object.keys(roomType ?? {});
-    throw new LiteApiError(
-      `This rate is no longer available. Please search again. [diag prebookId=${data?.prebookId} total=${total} rateKeys=${rateKeys} roomTypeKeys=${roomTypeKeys} rate.offerRetailRate=${JSON.stringify(rate?.offerRetailRate)} rate.retailRate=${JSON.stringify(rate?.retailRate)} data.offerRetailRate=${JSON.stringify(data?.offerRetailRate)} roomType.offerRetailRate=${JSON.stringify(roomType?.offerRetailRate)}]`,
-      410
-    );
+    throw new LiteApiError("This rate is no longer available. Please search again.", 410);
   }
   return {
     prebookId: String(data.prebookId),

@@ -235,8 +235,10 @@ export async function prebookOffer(offerId: string): Promise<PrebookResult> {
   if (!data?.prebookId || !total) {
     // TEMP DIAGNOSTIC — surfaces liteAPI's raw prebook response shape for live debugging.
     // Remove before leaving this in production long-term.
+    const rateKeys = Object.keys(rate ?? {});
+    const roomTypeKeys = Object.keys(roomType ?? {});
     throw new LiteApiError(
-      `This rate is no longer available. Please search again. [diag prebookId=${data?.prebookId} total=${total} roomType0=${JSON.stringify(roomType).slice(0, 500)} rate0=${JSON.stringify(rate).slice(0, 500)} dataTopKeys=${Object.keys(data ?? {}).join(",")}]`,
+      `This rate is no longer available. Please search again. [diag prebookId=${data?.prebookId} total=${total} rateKeys=${rateKeys} roomTypeKeys=${roomTypeKeys} rate.offerRetailRate=${JSON.stringify(rate?.offerRetailRate)} rate.retailRate=${JSON.stringify(rate?.retailRate)} data.offerRetailRate=${JSON.stringify(data?.offerRetailRate)} roomType.offerRetailRate=${JSON.stringify(roomType?.offerRetailRate)}]`,
       410
     );
   }

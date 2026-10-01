@@ -233,10 +233,10 @@ export async function prebookOffer(offerId: string): Promise<PrebookResult> {
   // but /rates/prebook has no real inventory behind them and routinely comes back 200 OK
   // with no prebookId/total — not a client bug, and not fixable without a production key.
   if (!data?.prebookId || !total) {
-    // TEMP DIAGNOSTIC — surfaces liteAPI's raw prebook response for live debugging.
+    // TEMP DIAGNOSTIC — surfaces liteAPI's raw prebook response shape for live debugging.
     // Remove before leaving this in production long-term.
     throw new LiteApiError(
-      `This rate is no longer available. Please search again. [diag status=${res.status} body=${JSON.stringify(body).slice(0, 900)}]`,
+      `This rate is no longer available. Please search again. [diag prebookId=${data?.prebookId} total=${total} roomType0=${JSON.stringify(roomType).slice(0, 500)} rate0=${JSON.stringify(rate).slice(0, 500)} dataTopKeys=${Object.keys(data ?? {}).join(",")}]`,
       410
     );
   }

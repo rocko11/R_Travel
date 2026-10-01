@@ -247,6 +247,11 @@ export default function HotelForm() {
   return (
     <form onSubmit={submit}>
       <div className="card search">
+        <div className="seg" role="group" aria-label="Room type" style={{ marginBottom: 10 }}>
+          {(["standard", "deluxe", "suite"] as RoomType[]).map((r) => (
+            <button key={r} type="button" aria-pressed={roomType === r} onClick={() => setRoomType(r)}>{ROOM_LABEL[r]}</button>
+          ))}
+        </div>
         <div className="jet-grid">
           <AirportInput id="hcity" label="City or airport" placeholder="City or airport code" value={place} onChange={setPlace} />
           <div className="field">
@@ -272,30 +277,15 @@ export default function HotelForm() {
         </div>
       </div>
 
-      <h2 className="jet-h">Choose a room</h2>
-      <div className="seg" role="group" aria-label="Room type" style={{ marginBottom: 12 }}>
-        {(["standard", "deluxe", "suite"] as RoomType[]).map((r) => (
-          <button key={r} type="button" aria-pressed={roomType === r} onClick={() => setRoomType(r)}>{ROOM_LABEL[r]}</button>
-        ))}
-      </div>
-
-      <h2 className="jet-h">Choose a hotel</h2>
-      {place ? (
-        <p className="muted" style={{ marginTop: -4 }}>
-          {loadingRates ? (
-            "Checking rates…"
-          ) : (
-            <>
-              {estimates.length} hotel{estimates.length !== 1 ? "s" : ""} in {destInput?.city}
-              {matched && !liveRates ? ", including our destination guide's picks" : ""}.{" "}
-              {liveRates
-                ? `Live rates for ${nights} night${nights > 1 ? "s" : ""}, ${rooms} room${rooms > 1 ? "s" : ""} total below.`
-                : `Estimates are per room, for ${nights} night${nights > 1 ? "s" : ""}, ${rooms} room${rooms > 1 ? "s" : ""} total below.`}
-            </>
-          )}
-        </p>
-      ) : (
-        <p className="muted" style={{ marginTop: -4 }}>Search a city or airport code above to see hotels to choose from.</p>
+      {!place && <p className="muted" style={{ marginTop: 0 }}>Search a city or airport code above to see hotels to choose from.</p>}
+      {place && loadingRates && (
+        <>
+          <p className="muted" style={{ marginTop: 0 }}>Checking rates…</p>
+          {[0, 1, 2].map((i) => <div key={i} className="skeleton" />)}
+        </>
+      )}
+      {place && !loadingRates && estimates.length === 0 && (
+        <div className="card state">No hotels found for these dates. Try nearby dates or a different city.</div>
       )}
       {estimates.length > 0 && (
         <div className="results" style={{ padding: "0 0 12px" }}>
@@ -337,7 +327,11 @@ export default function HotelForm() {
           <div>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: "0 0 10px", flexWrap: "wrap", gap: 8 }}>
               <p className="tiny" style={{ margin: 0 }}>
-                {filteredSorted.length} of {estimates.length} propert{estimates.length === 1 ? "y" : "ies"}
+                {filteredSorted.length} of {estimates.length} propert{estimates.length === 1 ? "y" : "ies"} in {destInput?.city}
+                {" · "}
+                {liveRates
+                  ? `live rates for ${nights} night${nights > 1 ? "s" : ""}, ${rooms} room${rooms > 1 ? "s" : ""} total`
+                  : `estimates for ${nights} night${nights > 1 ? "s" : ""}, ${rooms} room${rooms > 1 ? "s" : ""} total`}
               </p>
               <div className="seg" role="group" aria-label="View">
                 <button type="button" aria-pressed={view === "list"} onClick={() => setView("list")}>List</button>

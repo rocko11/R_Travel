@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import SearchForm from "../components/SearchForm";
 import { SliceRow } from "../components/Itinerary";
 import WeatherStrip from "../components/WeatherStrip";
+import HotelsForFlight from "../components/HotelsForFlight";
 import CabinPanel from "../components/CabinPanel";
 import { duration, money } from "@/lib/format";
 import type { CabinClass, PricedOffer } from "@/lib/types";
@@ -165,6 +166,15 @@ function Results() {
               <b>Plan your days in {(sp.get("toLabel") || sp.get("destination"))!.replace(/ \(.*\)$/, "")}</b>
               <span className="muted">3 day-by-day plans for your dates. Save, edit or mix them. →</span>
             </a>
+          )}
+          {sp.get("destination") && sp.get("departDate") && (
+            <HotelsForFlight
+              code={sp.get("destination")!}
+              label={sp.get("toLabel") || sp.get("destination")!}
+              departDate={sp.get("departDate")!}
+              returnDate={sp.get("returnDate") || undefined}
+              guests={Number(sp.get("adults") || 1) + (sp.get("childAges") || "").split(",").filter(Boolean).length}
+            />
           )}
           {top && (
             <div className="card sortbar" role="group" aria-label="Sort">

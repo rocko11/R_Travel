@@ -105,6 +105,7 @@ export default function HotelForm() {
   const [sort, setSort] = useState<Sort>("price");
   const [hiddenTiers, setHiddenTiers] = useState<Set<HotelTier>>(new Set());
   const [maxPrice, setMaxPrice] = useState<number | "">("");
+  const [nameFilter, setNameFilter] = useState("");
   const [view, setView] = useState<View>("list");
 
   useEffect(() => {
@@ -158,15 +159,22 @@ export default function HotelForm() {
   useEffect(() => {
     setHiddenTiers(new Set());
     setMaxPrice("");
+    setNameFilter("");
   }, [destInput?.code]);
 
   const availableTiers = useMemo(() => [...new Set(estimates.map((e) => e.hotel.tier))], [estimates]);
+  const normalizedNameFilter = nameFilter.trim().toLowerCase();
   const filteredSorted = useMemo(() => {
-    const list = estimates.filter((e) => !hiddenTiers.has(e.hotel.tier) && (maxPrice === "" || e.low * rooms <= maxPrice));
+    const list = estimates.filter(
+      (e) =>
+        !hiddenTiers.has(e.hotel.tier) &&
+        (maxPrice === "" || e.low * rooms <= maxPrice) &&
+        (!normalizedNameFilter || e.hotel.name.toLowerCase().includes(normalizedNameFilter))
+    );
     return [...list].sort((a, b) =>
       sort === "rating" ? (b.hotel.stars ?? 0) - (a.hotel.stars ?? 0) : a.low - b.low
     );
-  }, [estimates, hiddenTiers, maxPrice, sort, rooms]);
+  }, [estimates, hiddenTiers, maxPrice, normalizedNameFilter, sort, rooms]);
 
   const chosen = estimates.find((e) => e.hotel.name === hotelName);
   const cheapestBookable = estimates.find((e) => e.offerId);
@@ -290,6 +298,14 @@ export default function HotelForm() {
       {estimates.length > 0 && (
         <div className="results" style={{ padding: "0 0 12px" }}>
           <aside className="card filters" aria-label="Filters">
+            <h3>Hotel name</h3>
+            <input
+              type="text"
+              placeholder="Search by hotel name"
+              value={nameFilter}
+              onChange={(e) => setNameFilter(e.target.value)}
+              style={{ width: "100%", border: "1px solid var(--line)", borderRadius: 8, padding: "7px 10px", background: "var(--surface)", color: "var(--ink)" }}
+            />
             <h3>Sort by</h3>
             <label className="check">
               <input type="radio" name="hsort" checked={sort === "price"} onChange={() => setSort("price")} /> Price, low to high
@@ -345,7 +361,13 @@ export default function HotelForm() {
               </div>
             )}
 
-            {view === "list" && (
+            {view === "list" && filteredSorted.length === 0 && (
+              <div className="card state">
+                No properties match {normalizedNameFilter ? `“${nameFilter.trim()}”` : "these filters"} for this search. Try a different name or spelling, or clear your filters.
+              </div>
+            )}
+
+            {view === "list" && filteredSorted.length > 0 && (
             <>
             <button
               type="button"
@@ -357,7 +379,11 @@ export default function HotelForm() {
               <div className="hprop-body">
                 <span className="chip brand" style={{ alignSelf: "flex-start" }}>Recommended</span>
                 <span className="hprop-name">Best available</span>
-                <span className="hprop-area">We match you to the right hotel for your dates and budget.</span>
+                <span className="hprop-area">
+                  {normalizedNameFilter
+                    ? `Best match for “${nameFilter.trim()}” on your dates and budget.`
+                    : "We match you to the right hotel for your dates and budget."}
+                </span>
               </div>
               <div className="hprop-price">
                 {filteredSorted[0] && (

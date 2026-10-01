@@ -348,25 +348,26 @@ button, input, select { font: inherit; color: inherit; }
 .hprop:hover .hprop-photo img { transform: scale(1.045); }
 .hprop-photo-ph { width: 100%; height: 100%; min-height: 172px; display: grid; place-items: center; font-size: 13px; color: var(--ink-3); background: linear-gradient(135deg, var(--brand-soft), var(--bg)); }
 .hprop-body { padding: 16px 18px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
-.hprop-name { font-family: "Playfair Display", Georgia, "Times New Roman", serif; font-size: 19px; font-weight: 700; letter-spacing: -0.005em; line-height: 1.25; }
+.hprop-name { font-size: 19px; font-weight: 700; letter-spacing: -0.005em; line-height: 1.25; }
 .hprop-area { font-size: 13px; color: var(--ink-2); }
 .hprop-stars { color: var(--warn); font-size: 13px; letter-spacing: 1px; }
 .hprop-price { border-left: 1px solid var(--line); padding: 16px 18px; display: flex; flex-direction: column; justify-content: center; align-items: flex-end; gap: 4px; text-align: right; }
 @media (max-width: 760px) { .hprop-price { border-left: 0; border-top: 1px solid var(--line); align-items: flex-start; text-align: left; } }
-.hprop-total { font-family: "Playfair Display", Georgia, "Times New Roman", serif; font-size: 23px; font-weight: 700; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
+.hprop-total { font-size: 23px; font-weight: 700; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
 .score { display: inline-flex; align-items: center; justify-content: center; min-width: 30px; height: 26px; padding: 0 6px; border-radius: 6px; background: var(--good); color: #fff; font-weight: 700; font-size: 13px; }
 .score.mid { background: var(--warn); }
 .score.low { background: var(--ink-3); }
 .hprop-link { font-size: 13px; color: var(--brand); text-decoration: none; align-self: flex-start; }
 .hprop-link:hover { text-decoration: underline; }
-.hprop-book { border-color: var(--brand); color: var(--brand); background: transparent; }
-.hprop-book:hover { background: var(--brand); color: var(--brand-ink); }
-.hprop-best { grid-template-columns: 1fr 196px; border-color: var(--warn); background: linear-gradient(90deg, var(--warn-soft), var(--surface) 65%); }
+.hprop-book { width: 100%; }
+.hprop-best { grid-template-columns: 1fr 196px; border-color: var(--brand); background: linear-gradient(90deg, var(--brand-soft), var(--surface) 65%); }
+.chip.brand { background: var(--brand-soft); color: var(--brand); border-color: transparent; }
 .hprop-best .hprop-body { padding: 18px 20px; gap: 7px; }
 .hprop-best .hprop-name { font-size: 20px; }
 
-/* Hotel cross-sell strip on the flight results page — same photo/serif-name language as the
-   hotel results list, shrunk into a horizontally-scrolling row rather than a stacked list. */
+/* Hotel cross-sell strip on the flight results page — same card language as the hotel results
+   list (and the same plain sans typography the rest of the site uses), shrunk into a
+   horizontally-scrolling row rather than a stacked list. */
 .hotel-teaser-strip { margin-bottom: 12px; }
 .hotel-teaser-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
 .hotel-teaser-head b { font-size: 15px; }
@@ -375,7 +376,7 @@ button, input, select { font: inherit; color: inherit; }
 .hotel-teaser-card:hover { border-color: var(--ink-3); box-shadow: 0 2px 6px rgba(20, 20, 30, 0.06), 0 10px 24px rgba(20, 20, 30, 0.08); transform: translateY(-2px); }
 .hotel-teaser-photo { height: 104px; background: var(--bg); overflow: hidden; }
 .hotel-teaser-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.hotel-teaser-name { font-family: "Playfair Display", Georgia, "Times New Roman", serif; font-size: 14px; font-weight: 700; line-height: 1.25; padding: 8px 10px 0; }
+.hotel-teaser-name { font-size: 14px; font-weight: 700; line-height: 1.25; padding: 8px 10px 0; }
 .hotel-teaser-card .hprop-stars { padding: 0 10px; font-size: 11px; }
 .hotel-teaser-price { font-size: 13px; font-weight: 600; padding: 0 10px 10px; color: var(--brand); }
 .skeleton-card { flex: 0 0 180px; height: 164px; background: linear-gradient(90deg, var(--surface) 0%, var(--bg) 50%, var(--surface) 100%); background-size: 200% 100%; animation: sh 1.2s infinite; border-radius: var(--radius); border: 1px solid var(--line); }

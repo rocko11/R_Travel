@@ -355,7 +355,7 @@ export default function HotelForm() {
               onClick={() => setHotelName("any")}
             >
               <div className="hprop-body">
-                <span className="chip warn" style={{ alignSelf: "flex-start" }}>Recommended</span>
+                <span className="chip brand" style={{ alignSelf: "flex-start" }}>Recommended</span>
                 <span className="hprop-name">Best available</span>
                 <span className="hprop-area">We match you to the right hotel for your dates and budget.</span>
               </div>
@@ -427,7 +427,7 @@ export default function HotelForm() {
                     {e.offerId && (
                       <button
                         type="button"
-                        className="btn ghost small hprop-book"
+                        className="btn small hprop-book"
                         style={{ marginTop: 6 }}
                         onClick={(ev) => {
                           // Book straight from the list — no need to open the property page first.

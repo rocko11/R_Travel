@@ -351,12 +351,11 @@ export default function HotelForm() {
               type="button"
               role="radio"
               aria-checked={hotelName === "any"}
-              className="card hprop"
-              style={{ gridTemplateColumns: "1fr 180px" }}
+              className="card hprop hprop-best"
               onClick={() => setHotelName("any")}
             >
               <div className="hprop-body">
-                <span className="chip good" style={{ alignSelf: "flex-start" }}>Recommended</span>
+                <span className="chip warn" style={{ alignSelf: "flex-start" }}>Recommended</span>
                 <span className="hprop-name">Best available</span>
                 <span className="hprop-area">We match you to the right hotel for your dates and budget.</span>
               </div>
@@ -428,7 +427,7 @@ export default function HotelForm() {
                     {e.offerId && (
                       <button
                         type="button"
-                        className="btn small"
+                        className="btn ghost small hprop-book"
                         style={{ marginTop: 6 }}
                         onClick={(ev) => {
                           // Book straight from the list — no need to open the property page first.

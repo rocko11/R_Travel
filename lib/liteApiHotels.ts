@@ -232,7 +232,14 @@ export async function prebookOffer(offerId: string): Promise<PrebookResult> {
   // With a sandbox key ("sand_..."), /hotels/rates returns realistic-looking mock offers,
   // but /rates/prebook has no real inventory behind them and routinely comes back 200 OK
   // with no prebookId/total — not a client bug, and not fixable without a production key.
-  if (!data?.prebookId || !total) throw new LiteApiError("This rate is no longer available. Please search again.", 410);
+  if (!data?.prebookId || !total) {
+    // TEMP DIAGNOSTIC — surfaces liteAPI's raw prebook response for live debugging.
+    // Remove before leaving this in production long-term.
+    throw new LiteApiError(
+      `This rate is no longer available. Please search again. [diag status=${res.status} body=${JSON.stringify(body).slice(0, 900)}]`,
+      410
+    );
+  }
   return {
     prebookId: String(data.prebookId),
     hotelId: String(data.hotelId ?? ""),

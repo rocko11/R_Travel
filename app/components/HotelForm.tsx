@@ -177,7 +177,12 @@ export default function HotelForm() {
   }, [estimates, hiddenTiers, maxPrice, normalizedNameFilter, sort, rooms]);
 
   const chosen = estimates.find((e) => e.hotel.name === hotelName);
-  const cheapestBookable = estimates.find((e) => e.offerId);
+  // Cheapest bookable rate among whatever's currently showing (filters/name search applied) —
+  // not the whole unfiltered city — so "Best available" always matches what "Continue to
+  // book" actually books, instead of silently falling back to a hotel the guest has filtered out.
+  const cheapestBookable = filteredSorted
+    .filter((e) => e.offerId)
+    .sort((a, b) => a.low - b.low)[0];
   // An exact hotel pick books that rate; "Best available" books the cheapest bookable rate, when one exists.
   const bookable = chosen?.offerId ? chosen : hotelName === "any" ? cheapestBookable : undefined;
 

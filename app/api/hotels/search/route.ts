@@ -31,7 +31,10 @@ export async function GET(req: NextRequest) {
 
     const matched = matchDestination(code);
     const dest = { slug: matched?.slug, code, city, country };
-    const result = await hotelEstimatesFor(dest, checkIn, checkOut, guests, rooms, roomType);
+    // Temporary ops escape hatch: ?debugLiteApi=1 surfaces the real liteAPI error instead of
+    // silently falling back to synthetic estimates, to diagnose a key/config problem in prod.
+    const debugLiteApi = sp.get("debugLiteApi") === "1";
+    const result = await hotelEstimatesFor(dest, checkIn, checkOut, guests, rooms, roomType, debugLiteApi);
     return NextResponse.json({ ...result, slug: matched?.slug });
   } catch (e) {
     return fail(e);

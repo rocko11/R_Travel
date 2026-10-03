@@ -35,6 +35,14 @@ export async function GET(req: NextRequest) {
     // silently falling back to synthetic estimates, to diagnose a key/config problem in prod.
     const debugLiteApi = sp.get("debugLiteApi") === "1";
     const result = await hotelEstimatesFor(dest, checkIn, checkOut, guests, rooms, roomType, debugLiteApi);
+    if (debugLiteApi) {
+      const { config, liteApiEnabled } = await import("@/lib/config");
+      return NextResponse.json({
+        ...result,
+        slug: matched?.slug,
+        _debug: { liteApiEnabled: liteApiEnabled(), keyLen: config.liteApiKey.length, keyPrefix: config.liteApiKey.slice(0, 8) },
+      });
+    }
     return NextResponse.json({ ...result, slug: matched?.slug });
   } catch (e) {
     return fail(e);

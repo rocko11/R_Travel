@@ -33,16 +33,7 @@ export async function GET(req: NextRequest) {
     const dest = { slug: matched?.slug, code, city, country };
     // Temporary ops escape hatch: ?debugLiteApi=1 surfaces the real liteAPI error instead of
     // silently falling back to synthetic estimates, to diagnose a key/config problem in prod.
-    const debugLiteApi = sp.get("debugLiteApi") === "1";
-    const result = await hotelEstimatesFor(dest, checkIn, checkOut, guests, rooms, roomType, debugLiteApi);
-    if (debugLiteApi) {
-      const { config, liteApiEnabled } = await import("@/lib/config");
-      return NextResponse.json({
-        ...result,
-        slug: matched?.slug,
-        _debug: { liteApiEnabled: liteApiEnabled(), keyLen: config.liteApiKey.length, keyPrefix: config.liteApiKey.slice(0, 8) },
-      });
-    }
+    const result = await hotelEstimatesFor(dest, checkIn, checkOut, guests, rooms, roomType);
     return NextResponse.json({ ...result, slug: matched?.slug });
   } catch (e) {
     return fail(e);

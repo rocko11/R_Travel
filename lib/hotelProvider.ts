@@ -57,8 +57,7 @@ async function liteApiEstimates(
   checkIn: string,
   checkOut: string,
   guests: number,
-  rooms: number,
-  debugLiteApi = false
+  rooms: number
 ): Promise<LiveHotelEstimate[] | null> {
   if (!dest || !liteApiEnabled()) return null;
   // Prefer the real ISO-3166 country code Duffel's place search already gave us for whatever
@@ -112,10 +111,7 @@ async function liteApiEstimates(
       // Always log so a key/config problem shows up in Netlify function logs instead of
       // silently and permanently falling back to synthetic estimates.
       console.error("liteAPI searchCityRates failed:", e instanceof Error ? e.message : e);
-      if (attempt === 1) {
-        if (debugLiteApi) throw e;
-        return null;
-      }
+      if (attempt === 1) return null;
     }
   }
   return null;
@@ -178,11 +174,10 @@ export async function hotelEstimatesFor(
   checkOut: string,
   guests: number,
   rooms: number,
-  roomType: RoomType,
-  debugLiteApi = false
+  roomType: RoomType
 ): Promise<{ source: "live" | "estimate"; hotels: HotelEstimate[] }> {
   const nights = Math.max(1, Math.round((Date.parse(checkOut) - Date.parse(checkIn)) / 86_400_000));
-  const liteApi = await liteApiEstimates(dest, checkIn, checkOut, guests, rooms, debugLiteApi);
+  const liteApi = await liteApiEstimates(dest, checkIn, checkOut, guests, rooms);
   if (liteApi) return { source: "live", hotels: liteApi };
   const amadeus = await liveHotelEstimates(dest, checkIn, checkOut, guests, rooms);
   if (amadeus) return { source: "live", hotels: amadeus };

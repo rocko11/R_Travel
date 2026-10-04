@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { DESTINATIONS, destinationBySlug } from "@/lib/destinations";
 import DestinationWeather from "../../components/DestinationWeather";
 import TourCards from "../../components/TourCards";
+import TrustStrip from "../../components/TrustStrip";
 
 export function generateStaticParams() {
   return DESTINATIONS.map((d) => ({ slug: d.slug }));
@@ -62,6 +63,8 @@ export default async function DestinationPage({ params }: { params: Promise<{ sl
         <Link href={`/concierge?city=${d.slug}`} className="btn ghost small" style={{ display: "inline-flex", alignItems: "center", textDecoration: "none" }}>Ask the concierge</Link>
         <Link href="/jets" className="btn ghost small" style={{ display: "inline-flex", alignItems: "center", textDecoration: "none" }}>Fly private</Link>
       </div>
+
+      <TrustStrip />
 
       <nav className="guide-nav" aria-label="On this page">
         {nav.map(([id, label]) => <a key={id} href={`#${id}`}>{label}</a>)}

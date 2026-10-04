@@ -5,6 +5,7 @@ import { kvGet, kvSet, serial } from "./kv";
 import { config, paymentsRequired } from "./config";
 import { prebookOffer, bookPrebook, LiteApiError, type PrebookResult } from "./liteApiHotels";
 import { ValidationError } from "./validate";
+import { reportPurchase } from "./metaConversions";
 
 const stripe = () => new Stripe(config.stripeKey, { apiVersion: "2025-08-27.basil" });
 
@@ -211,12 +212,20 @@ async function fulfil(bookingId: string): Promise<HotelBooking> {
       guests: b.guests,
       clientReference: b.id,
     });
-    return (await updateHotelBooking(bookingId, (x) => ({
+    const confirmed = (await updateHotelBooking(bookingId, (x) => ({
       ...x,
       status: "confirmed",
       supplierBookingId: result.bookingId,
       confirmationCode: result.confirmationCode,
     })))!;
+    void reportPurchase({
+      eventId: confirmed.id,
+      value: confirmed.total,
+      currency: confirmed.currency,
+      email: confirmed.contact.email,
+      contentType: "hotel",
+    });
+    return confirmed;
   } catch (e) {
     const reason = e instanceof Error ? e.message : "Booking with the hotel failed.";
     let refunded = "";

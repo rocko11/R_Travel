@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getBooking } from "@/lib/store";
 import { SliceRow, SliceDetail } from "../../components/Itinerary";
 import { money } from "@/lib/format";
+import ConversionPixel from "../../components/ConversionPixel";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +17,14 @@ export default async function BookingPage({ params }: { params: Promise<{ id: st
       <div className="card confirm">
         {b.status === "confirmed" && (
           <>
+            <ConversionPixel
+              eventId={b.id}
+              value={b.total}
+              currency={b.currency}
+              contentType="flight"
+              googleAdsId={process.env.NEXT_PUBLIC_GOOGLE_ADS_ID}
+              googleAdsLabel={process.env.NEXT_PUBLIC_GOOGLE_ADS_LABEL}
+            />
             <div className="alert good">Booked. Confirmation sent to {b.contact.email}.</div>
             <div className="tiny">Airline booking reference</div>
             <div className="pnr">{b.bookingReference}</div>

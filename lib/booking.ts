@@ -4,6 +4,7 @@ import { assertSafeConfig, config, paymentsRequired } from "./config";
 import { freshOffer, issue } from "./provider";
 import { getBooking, newBookingId, saveBooking, updateBooking } from "./store";
 import type { Booking, ContactInput, PassengerInput } from "./types";
+import { reportPurchase } from "./metaConversions";
 
 const stripe = () => new Stripe(config.stripeKey, { apiVersion: "2025-08-27.basil" });
 
@@ -120,12 +121,22 @@ async function fulfil(bookingId: string): Promise<Booking> {
       throw new BookingError("The airline changed the fare during payment.", 409);
     }
     const { orderId, bookingReference } = await issue(offer, b.passengers, b.contact);
-    return (await updateBooking(bookingId, (x) => ({
+    const confirmed = (await updateBooking(bookingId, (x) => ({
       ...x,
       status: "confirmed",
       supplierOrderId: orderId,
       bookingReference,
     })))!;
+    // Server-side conversion report — exactly-once thanks to the claim above. Never blocks or
+    // fails the booking; reportPurchase swallows its own errors.
+    void reportPurchase({
+      eventId: confirmed.id,
+      value: confirmed.total,
+      currency: confirmed.currency,
+      email: confirmed.contact.email,
+      contentType: "flight",
+    });
+    return confirmed;
   } catch (e) {
     const reason = e instanceof Error ? e.message : "Ticketing failed.";
     let refunded = "";

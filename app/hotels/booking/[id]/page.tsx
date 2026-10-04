@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getHotelBooking } from "@/lib/hotelBooking";
 import { day, money } from "@/lib/format";
+import ConversionPixel from "../../../components/ConversionPixel";
 
 export const dynamic = "force-dynamic";
 
@@ -15,6 +16,14 @@ export default async function HotelBookingPage({ params }: { params: Promise<{ i
       <div className="card confirm">
         {b.status === "confirmed" && (
           <>
+            <ConversionPixel
+              eventId={b.id}
+              value={b.total}
+              currency={b.currency}
+              contentType="hotel"
+              googleAdsId={process.env.NEXT_PUBLIC_GOOGLE_ADS_ID}
+              googleAdsLabel={process.env.NEXT_PUBLIC_GOOGLE_ADS_LABEL}
+            />
             <div className="alert good">Booked. Confirmation sent to {b.contact.email}.</div>
             <div className="tiny">Hotel confirmation code</div>
             <div className="pnr">{b.confirmationCode ?? b.supplierBookingId}</div>
